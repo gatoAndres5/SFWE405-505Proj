@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 public class ScheduleItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer scheduleItemId;
+    private Long id;
 
     @ManyToOne
     @JoinColumn(name = "event_id")
@@ -38,8 +38,7 @@ public class ScheduleItem {
     // Constructor
     protected ScheduleItem() {}
 
-    public ScheduleItem(Integer scheduleItemId, Integer eventId, Venue venueId, String title, String description, String startDateTime, String endDateTime, String type, LocalDateTime createdAt, LocalDateTime updatedAt) {
-        this.scheduleItemId = scheduleItemId;
+    public ScheduleItem(Integer eventId, Venue venueId, String title, String description, String startDateTime, String endDateTime, String type, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.eventId = eventId;
         this.venueId = venueId;
         this.title = title;
@@ -53,9 +52,8 @@ public class ScheduleItem {
     }
 
     //Getters
-    // id removed; scheduleItemId is now the primary key
-    public Integer getScheduleItemId() {
-        return scheduleItemId;
+    public Long getId() {
+        return id;
     }
     public Integer getEventId() {
         return eventId;
@@ -86,8 +84,8 @@ public class ScheduleItem {
     }
 
     //Setters
-    public void setScheduleItemId(Integer scheduleItemId) {
-        this.scheduleItemId = scheduleItemId;
+    public void setId(Long id) {
+        this.id = id;
     }
     public void setEventId(Integer eventId) {
         this.eventId = eventId;
