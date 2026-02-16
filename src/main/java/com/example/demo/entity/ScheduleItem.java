@@ -14,8 +14,6 @@ import java.time.LocalDateTime;
 public class ScheduleItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
     private Integer scheduleItemId;
 
     @ManyToOne
@@ -50,13 +48,12 @@ public class ScheduleItem {
         this.endDateTime = endDateTime;
         this.type = type;
         this.createdAt = createdAt;
+        //maybe remove later, or leave it blank when ScheduleItem object is created
         this.updatedAt = updatedAt;
     }
 
     //Getters
-    public Long getId() {
-        return id;
-    }
+    // id removed; scheduleItemId is now the primary key
     public Integer getScheduleItemId() {
         return scheduleItemId;
     }
@@ -89,9 +86,6 @@ public class ScheduleItem {
     }
 
     //Setters
-    public void setId(Long id) {
-        this.id = id;
-    }
     public void setScheduleItemId(Integer scheduleItemId) {
         this.scheduleItemId = scheduleItemId;
     }
