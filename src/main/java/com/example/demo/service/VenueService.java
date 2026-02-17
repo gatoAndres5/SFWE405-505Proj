@@ -81,8 +81,8 @@ public class VenueService {
             .orElseThrow(() -> new IllegalArgumentException("Venue not found with id: " + venueId));
         
         for (ScheduleItem item : venue.getScheduleItems()) {
-            if (item.getStartTime().isBefore(endDateTime) && 
-                item.getEndTime().isAfter(startDateTime)) {
+            if (item.getStartDateTime().isBefore(endDateTime) && 
+                item.getEndDateTime().isAfter(startDateTime)) {
                 return false;
             }
         }
