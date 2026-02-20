@@ -18,7 +18,7 @@ public class ScheduleItem {
 
     @ManyToOne
     @JoinColumn(name = "event_id")
-    private Integer eventId;
+    private Event eventId;
     
     @ManyToOne
     @JoinColumn(name = "venue_id")
@@ -27,8 +27,8 @@ public class ScheduleItem {
     private String title;
     private String description;
 
-    private String startDateTime;
-    private String endDateTime;
+    private LocalDateTime startDateTime;
+    private LocalDateTime endDateTime;
 
     private String type;
 
@@ -38,7 +38,7 @@ public class ScheduleItem {
     // Constructor
     protected ScheduleItem() {}
 
-    public ScheduleItem(Integer eventId, Venue venueId, String title, String description, String startDateTime, String endDateTime, String type, LocalDateTime createdAt, LocalDateTime updatedAt) {
+    public ScheduleItem(Event eventId, Venue venueId, String title, String description, LocalDateTime startDateTime, LocalDateTime endDateTime, String type, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.eventId = eventId;
         this.venueId = venueId;
         this.title = title;
@@ -55,7 +55,7 @@ public class ScheduleItem {
     public Long getId() {
         return id;
     }
-    public Integer getEventId() {
+    public Event getEventId() {
         return eventId;
     }
     public Venue getVenue() {
@@ -67,10 +67,10 @@ public class ScheduleItem {
     public String getDescription() {
         return description;
     }
-    public String getStartDateTime() {
+    public LocalDateTime getStartDateTime() {
         return startDateTime;
     }
-    public String getEndDateTime() {
+    public LocalDateTime getEndDateTime() {
         return endDateTime;
     }
     public String getType() {
@@ -87,7 +87,7 @@ public class ScheduleItem {
     public void setId(Long id) {
         this.id = id;
     }
-    public void setEventId(Integer eventId) {
+    public void setEventId(Event eventId) {
         this.eventId = eventId;
     }
     public void setVenueId(Venue venueId) {
@@ -99,10 +99,10 @@ public class ScheduleItem {
     public void setDescription(String description) {
         this.description = description;
     }
-    public void setStartDateTime(String startDateTime) {
+    public void setStartDateTime(LocalDateTime startDateTime) {
         this.startDateTime = startDateTime;
     }
-    public void setEndDateTime(String endDateTime) {
+    public void setEndDateTime(LocalDateTime endDateTime) {
         this.endDateTime = endDateTime;
     }
     public void setType(String type) {
