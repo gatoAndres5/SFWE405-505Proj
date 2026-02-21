@@ -1,5 +1,6 @@
 package com.example.demo.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -9,7 +10,6 @@ import java.util.Objects;
 import java.time.Instant;
 
 @Entity
-@Table(name = "participants")
 public class Participant {
 
     public enum Role {
@@ -48,6 +48,7 @@ public class Participant {
     @Column(nullable = false)
     private Instant updatedAt;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "participant", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Registration> registrations = new ArrayList<>();
 
@@ -173,6 +174,10 @@ public class Participant {
 
     public boolean isActive() {
         return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
     }
 
     public Instant getCreatedAt() {
