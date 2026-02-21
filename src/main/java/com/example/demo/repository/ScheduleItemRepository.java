@@ -15,12 +15,12 @@ public interface ScheduleItemRepository extends JpaRepository<ScheduleItem, Long
     List<ScheduleItem> findByEvent_Id(Long eventId);
 
     //find all schedule items in a venue
-    List<ScheduleItem> findByVenue_Id(Long venueId);
+    List<ScheduleItem> findByVenue_VenueId(Long venueId);
 
     //find schedule items in time range
     List<ScheduleItem> findByStartDateTimeBetween(LocalDateTime start, LocalDateTime end);
 
-    List<ScheduleItem> findByVenue_IdAndStartDateTimeLessThanAndEndDateTimeGreaterThan(
+    List<ScheduleItem> findByVenue_VenueIdAndStartDateTimeLessThanAndEndDateTimeGreaterThan(
         Long venueId,
         LocalDateTime end,
         LocalDateTime start);

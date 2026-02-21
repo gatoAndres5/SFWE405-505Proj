@@ -4,7 +4,7 @@ import com.example.demo.entity.EventStatus;
 import java.util.List;
 
 import jakarta.persistence.CascadeType;
-
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -47,7 +47,7 @@ public class Event {
 
     //relationships
 
-    @OneToMany(mappedBy = "eventId", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ScheduleItem> scheduledItems = new ArrayList<>();
 
 /*  won't show the participant and will delete all of the RSVP information
@@ -64,7 +64,7 @@ public class Event {
 //one event and many registrations
 //then one participant and many registrations 
 //this would make it "many to many" through registrations
-
+    @JsonIgnore
     @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Registration> registrations = new ArrayList<>();
   

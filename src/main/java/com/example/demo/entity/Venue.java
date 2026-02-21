@@ -1,4 +1,5 @@
 package com.example.demo.entity;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -23,8 +24,7 @@ public class Venue {
     inverseJoinColumns = @JoinColumn(name = "event_id"))
     private List<Event> events = new ArrayList<>();
 
-    @OneToMany
-    @JoinColumn(name = "venue_id")
+    @OneToMany(mappedBy = "venue", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ScheduleItem> scheduleItems = new ArrayList<>();
 
     private String name;
