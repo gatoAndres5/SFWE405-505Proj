@@ -14,7 +14,7 @@ public class Registration {
     private Event event;
 
     @ManyToOne(optional = false)
-    @JoinColumn(name = "participation_id")
+    @JoinColumn(name = "participant_id")
     private Participant participant;
 
     private Date registeredAt;
