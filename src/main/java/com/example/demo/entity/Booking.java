@@ -1,4 +1,5 @@
 package com.example.demo.entity;
+
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
@@ -14,7 +15,9 @@ public class Booking {
     private LocalDateTime endDateTime;
     private String bookingStatus;
 
-    // Getters and Setters
+    @ManyToOne
+    @JoinColumn(name = "vendor_id")
+    private Vendor vendor;
 
     public Long getBookingId() {
         return bookingId;
@@ -54,5 +57,13 @@ public class Booking {
 
     public void setBookingStatus(String bookingStatus) {
         this.bookingStatus = bookingStatus;
+    }
+
+    public Vendor getVendor() {
+        return vendor;
+    }
+
+    public void setVendor(Vendor vendor) {
+        this.vendor = vendor;
     }
 }

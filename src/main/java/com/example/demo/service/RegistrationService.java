@@ -1,4 +1,5 @@
 package com.example.demo.service;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,7 +35,6 @@ public class RegistrationService {
     @Transactional
     public Registration register(Long eventId, Long participantId) {
 
-        // 1) Validate Event
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
@@ -48,7 +48,6 @@ public class RegistrationService {
             );
         }
 
-        // 2) Validate Participant
         Participant participant = participantRepository.findById(participantId)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
@@ -62,7 +61,6 @@ public class RegistrationService {
             );
         }
 
-        // 3) Prevent duplicate registration
         boolean alreadyRegistered =
                 registrationRepository.existsByEvent_IdAndParticipant_ParticipantId(eventId, participantId);
 
@@ -73,7 +71,6 @@ public class RegistrationService {
             );
         }
 
-        // 4) Create Registration
         Registration registration = new Registration(
                 event,
                 participant,
@@ -98,5 +95,87 @@ public class RegistrationService {
                         HttpStatus.NOT_FOUND,
                         "Registration not found: " + id
                 ));
+    }
+
+    @Transactional
+    public Registration updateStatus(Long id, RegistrationStatus newStatus) {
+        Registration registration = registrationRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Registration not found: " + id
+                ));
+
+        registration.setRegistrationStatus(newStatus);
+        return registrationRepository.save(registration);
+    }
+
+    @Transactional
+    public Registration cancelRegistration(Long id) {
+        Registration registration = registrationRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Registration not found: " + id
+                ));
+
+        registration.setRegistrationStatus(RegistrationStatus.CANCELLED);
+        registration.setCheckInStatus(false);
+        return registrationRepository.save(registration);
+    }
+
+    @Transactional
+    public Registration checkIn(Long id) {
+        Registration registration = registrationRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Registration not found: " + id
+                ));
+
+        if (registration.getRegistrationStatus() != RegistrationStatus.CONFIRMED) {
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "Only confirmed registrations may be checked in."
+            );
+        }
+
+        if (registration.getCheckInStatus()) {
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "Participant is already checked in."
+            );
+        }
+
+        registration.setCheckInStatus(true);
+        return registrationRepository.save(registration);
+    }
+
+    @Transactional
+    public Registration checkOut(Long id) {
+        Registration registration = registrationRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Registration not found: " + id
+                ));
+
+        if (!registration.getCheckInStatus()) {
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "Participant is not currently checked in."
+            );
+        }
+
+        registration.setCheckInStatus(false);
+        return registrationRepository.save(registration);
+    }
+
+    @Transactional
+    public void deleteRegistration(Long id) {
+        if (!registrationRepository.existsById(id)) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Registration not found: " + id
+            );
+        }
+
+        registrationRepository.deleteById(id);
     }
 }
