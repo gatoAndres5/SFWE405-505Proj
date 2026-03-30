@@ -1,0 +1,120 @@
+{
+  "info": {
+    "_postman_id": "9150ffac-a0aa-4478-9133-8941a01c0784",
+    "name": "Event",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "30177720",
+    "_collection_link": "https://go.postman.co/collection/30177720-9150ffac-a0aa-4478-9133-8941a01c0784?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Create Event",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"name\": \"Spring Tech Conference\",\r\n  \"description\": \"Annual software engineering conference\",\r\n  \"startDateTime\": \"2026-06-15T09:00:00\",\r\n  \"endDateTime\": \"2026-06-15T17:00:00\",\r\n  \"status\": \"DRAFT\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8080/events",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "events"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Events",
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"name\": \"Spring Tech Conference\",\r\n  \"description\": \"Annual software engineering conference\",\r\n  \"startDateTime\": \"2026-06-15T09:00:00\",\r\n  \"endDateTime\": \"2026-06-15T17:00:00\",\r\n  \"status\": \"DRAFT\"\r\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/events",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "events"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Specfic Event",
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"name\": \"Spring Tech Conference\",\r\n  \"description\": \"Annual software engineering conference\",\r\n  \"startDateTime\": \"2026-06-15T09:00:00\",\r\n  \"endDateTime\": \"2026-06-15T17:00:00\",\r\n  \"status\": \"DRAFT\"\r\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/events/1",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "events",
+            "1"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}
