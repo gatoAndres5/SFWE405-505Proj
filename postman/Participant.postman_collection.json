@@ -1,0 +1,136 @@
+{
+  "info": {
+    "_postman_id": "cd05441e-6f55-44f5-8f7f-71e013ce2ced",
+    "name": "Participant",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "30177720",
+    "_collection_link": "https://go.postman.co/collection/30177720-cd05441e-6f55-44f5-8f7f-71e013ce2ced?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Create Participant",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"firstName\": \"Andres\",\r\n  \"lastName\": \"Galvez\",\r\n  \"email\": \"andres3@example.com\",\r\n  \"phone\": \"5201234567\",\r\n  \"role\": \"ATTENDEE\",\r\n  \"active\": true\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8080/participants",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "participants"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Participants",
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"firstName\": \"Andres\",\r\n  \"lastName\": \"Galvez\",\r\n  \"email\": \"andres@example.com\",\r\n  \"phone\": \"5201234567\",\r\n  \"role\": \"ATTENDEE\",\r\n  \"active\": true\r\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/participants",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "participants"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Remove Participant",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"firstName\": \"Andres\",\r\n  \"lastName\": \"Galvez\",\r\n  \"email\": \"andres@example.com\",\r\n  \"phone\": \"5201234567\",\r\n  \"role\": \"ATTENDEE\",\r\n  \"active\": true\r\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/participants/1",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "participants",
+            "1"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Edit Participant",
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"firstName\": \"Andres Updated\",\r\n  \"lastName\": \"Galvez\",\r\n  \"email\": \"andres_new@example.com\",\r\n  \"phone\": \"5209999999\",\r\n  \"role\": \"SPEAKER\",\r\n  \"active\": true\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8080/participants/1",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "participants",
+            "1"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}
