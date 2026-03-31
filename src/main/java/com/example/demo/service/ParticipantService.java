@@ -17,12 +17,40 @@ public class ParticipantService {
     }
 
     public Participant createParticipant(Participant participant) {
+        if (participant == null) {
+            throw new IllegalArgumentException("Participant data is required");
+        }
+
+        String firstName = participant.getFirstName();
+        String lastName = participant.getLastName();
+        String email = participant.getEmail();
+        String phone = participant.getPhone();
+        Participant.Role role = participant.getRole();
+
+        if (firstName == null || firstName.isBlank()) {
+            throw new IllegalArgumentException("First name is required");
+        }
+
+        if (lastName == null || lastName.isBlank()) {
+            throw new IllegalArgumentException("Last name is required");
+        }
+
+        if (email == null || email.isBlank()) {
+            throw new IllegalArgumentException("Email is required");
+        }
+
+        email = email.trim();
+
+        if (participantRepository.existsByEmail(email)) {
+            throw new IllegalArgumentException("A participant with this email already exists");
+        }
+
         Participant newParticipant = Participant.createParticipant(
-            participant.getFirstName(),
-            participant.getLastName(),
-            participant.getEmail(),
-            participant.getPhone(),
-            participant.getRole()
+            firstName,
+            lastName,
+            email,
+            phone,
+            role
         );
 
         return participantRepository.save(newParticipant);
