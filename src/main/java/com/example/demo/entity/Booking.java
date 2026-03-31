@@ -19,6 +19,10 @@ public class Booking {
     @JoinColumn(name = "vendor_id")
     private Vendor vendor;
 
+    @ManyToOne
+    @JoinColumn(name = "event_id")
+    private Event event;
+
     public Long getBookingId() {
         return bookingId;
     }
@@ -65,5 +69,13 @@ public class Booking {
 
     public void setVendor(Vendor vendor) {
         this.vendor = vendor;
+    }
+
+    public Event getEvent() {
+        return event;
+    }
+
+    public void setEvent(Event event) {
+        this.event = event;
     }
 }

@@ -93,6 +93,10 @@ public class Vendor {
         return createdAt;
     }
 
+    public Long getId() {
+        return id;
+    }
+
     //SETTERS
 
     public void setName(String name) {
