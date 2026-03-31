@@ -2,66 +2,52 @@ package com.example.demo.controller;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.example.demo.entity.Participant;
-import com.example.demo.repository.ParticipantRepository;
+import com.example.demo.service.ParticipantService;
 
 @RestController
 @RequestMapping("/participants")
 public class ParticipantController {
 
-    @Autowired
-    private ParticipantRepository participantRepository;
+    private final ParticipantService participantService;
+
+    public ParticipantController(ParticipantService participantService) {
+        this.participantService = participantService;
+    }
 
     @PostMapping
-    public Participant createParticipant(@RequestBody Participant participant) {
-        return participantRepository.save(participant);
+    public ResponseEntity<Participant> createParticipant(@RequestBody Participant participant) {
+        return ResponseEntity.ok(participantService.createParticipant(participant));
     }
 
     @GetMapping
-    public List<Participant> getAllParticipants() {
-        return participantRepository.findAll();
+    public ResponseEntity<List<Participant>> getAllParticipants() {
+        return ResponseEntity.ok(participantService.getAllParticipants());
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteParticipant(@PathVariable Long id) {
-
-        if (!participantRepository.existsById(id)) {
-            return ResponseEntity.notFound().build();
-        }
-
-        participantRepository.deleteById(id);
-        return ResponseEntity.noContent().build();
+    @GetMapping("/{id}")
+    public ResponseEntity<Participant> getParticipantById(@PathVariable Long id) {
+        return ResponseEntity.ok(participantService.getParticipantById(id));
     }
-    
+
     @PutMapping("/{id}")
     public ResponseEntity<Participant> updateParticipant(
             @PathVariable Long id,
             @RequestBody Participant updatedParticipant) {
+        return ResponseEntity.ok(participantService.updateParticipant(id, updatedParticipant));
+    }
 
-        return participantRepository.findById(id)
-                .map(existingParticipant -> {
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteParticipant(@PathVariable Long id) {
+        participantService.deleteParticipant(id);
+        return ResponseEntity.noContent().build();
+    }
 
-                    existingParticipant.setFirstName(updatedParticipant.getFirstName());
-                    existingParticipant.setLastName(updatedParticipant.getLastName());
-                    existingParticipant.setEmail(updatedParticipant.getEmail());
-                    existingParticipant.setPhone(updatedParticipant.getPhone());
-                    existingParticipant.setRole(updatedParticipant.getRole());
-                    existingParticipant.setActive(updatedParticipant.isActive());
-
-                    Participant saved = participantRepository.save(existingParticipant);
-                    return ResponseEntity.ok(saved);
-                })
-                .orElseGet(() -> ResponseEntity.notFound().build());
+    @PatchMapping("/{id}/deactivate")
+    public ResponseEntity<Participant> deactivateParticipant(@PathVariable Long id) {
+        return ResponseEntity.ok(participantService.deactivateParticipant(id));
     }
 }
