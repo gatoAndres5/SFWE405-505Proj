@@ -1,10 +1,9 @@
 package com.example.demo.controller;
 
-
-
 import java.time.Instant;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.server.ResponseStatusException;
@@ -29,9 +28,25 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(status).body(body);
     }
 
-    // optional catch-all (prevents ugly stacktrace responses)
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ApiError> handleAccessDenied(
+            AccessDeniedException ex,
+            HttpServletRequest request
+    ) {
+        ApiError body = new ApiError(
+                Instant.now().toString(),
+                403,
+                "Forbidden",
+                request.getRequestURI()
+        );
+        return ResponseEntity.status(403).body(body);
+    }
+
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiError> handleGeneralException(Exception ex, HttpServletRequest request) {
+    public ResponseEntity<ApiError> handleGeneralException(
+            Exception ex,
+            HttpServletRequest request
+    ) {
         ApiError body = new ApiError(
                 Instant.now().toString(),
                 500,
@@ -54,6 +69,4 @@ public class GlobalExceptionHandler {
             this.path = path;
         }
     }
-} 
-    
-
+}
