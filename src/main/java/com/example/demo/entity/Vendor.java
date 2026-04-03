@@ -22,6 +22,7 @@ public class Vendor {
     private String contactPhone;
     private String contactEmail;
     private String address;
+    private String availability;
     private boolean active;
 
     private LocalDateTime createdAt;
@@ -30,11 +31,11 @@ public class Vendor {
     @OneToMany(mappedBy = "vendor", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Booking> bookings = new ArrayList<>();
 
-    protected Vendor(){
+    protected Vendor() {
     }
 
     public Vendor(String name, String contactName, String contactPhone,
-                  String contactEmail, String address, boolean active){
+                  String contactEmail, String address, boolean active) {
         this.name = name;
         this.contactName = contactName;
         this.contactPhone = contactPhone;
@@ -51,8 +52,7 @@ public class Vendor {
     }
 
     public Vendor(String name) {
-        this(name, "Unknown", "Unknown",
-                "Unknown", "Unknown", false);
+        this(name, "Unknown", "Unknown", "Unknown", "Unknown", false);
     }
 
     // GETTERS
@@ -77,8 +77,8 @@ public class Vendor {
         return address;
     }
 
-    public void setContactName(String contactName) {
-        this.contactName = contactName;
+    public String getAvailability() {
+        return availability;
     }
 
     public boolean isActive() {
@@ -97,10 +97,18 @@ public class Vendor {
         return id;
     }
 
-    //SETTERS
+    public List<Booking> getBookings() {
+        return bookings;
+    }
+
+    // SETTERS
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public void setContactName(String contactName) {
+        this.contactName = contactName;
     }
 
     public void setContactPhone(String contactPhone) {
@@ -113,6 +121,10 @@ public class Vendor {
 
     public void setAddress(String address) {
         this.address = address;
+    }
+
+    public void setAvailability(String availability) {
+        this.availability = availability;
     }
 
     public void setActive(boolean active) {
