@@ -42,7 +42,7 @@ public class ScheduleItemController {
 
     @DeleteMapping("/{id}") //delete schedule item
     public void deleteScheduleItem(@PathVariable Long id) {
-        scheduleItemService.deleteScheduleItem(id);
+        scheduleItemService.removeFromSchedule(id);
     }
 
     @PutMapping("/{id}/reschedule") //reschedule an existing item
