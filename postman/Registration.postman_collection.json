@@ -1,0 +1,498 @@
+{
+  "info": {
+    "_postman_id": "982c591e-616d-4a6d-9c6a-38254c94bae3",
+    "name": "Registration",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "30177720",
+    "_collection_link": "https://go.postman.co/collection/30177720-982c591e-616d-4a6d-9c6a-38254c94bae3?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Create Registration",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"firstName\": \"Andres\",\r\n  \"lastName\": \"Galvez\",\r\n  \"email\": \"andres@example.com\",\r\n  \"phone\": \"5201234567\",\r\n  \"role\": \"ATTENDEE\",\r\n  \"active\": true\r\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/registrations?eventId=3&participantId=5",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "registrations"
+          ],
+          "query": [
+            {
+              "key": "eventId",
+              "value": "3"
+            },
+            {
+              "key": "participantId",
+              "value": "5"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get All Registrations",
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": ""
+        },
+        "url": {
+          "raw": "{{base_url}}/registrations",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "registrations"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Registration by ID",
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "registrationId",
+            "value": "1",
+            "type": "text",
+            "disabled": true
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"firstName\": \"Andres\",\r\n  \"lastName\": \"Galvez\",\r\n  \"email\": \"andres@example.com\",\r\n  \"phone\": \"5201234567\",\r\n  \"role\": \"ATTENDEE\",\r\n  \"active\": true\r\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/registrations/4",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "registrations",
+            "4"
+          ],
+          "query": [
+            {
+              "key": "registrationId",
+              "value": "1",
+              "type": "text",
+              "disabled": true
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Remove Registration",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"firstName\": \"Andres\",\r\n  \"lastName\": \"Galvez\",\r\n  \"email\": \"andres@example.com\",\r\n  \"phone\": \"5201234567\",\r\n  \"role\": \"ATTENDEE\",\r\n  \"active\": true\r\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/registrations/1",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "registrations",
+            "1"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Update Status",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "registrationId",
+            "value": "1",
+            "type": "text",
+            "disabled": true
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"firstName\": \"Andres\",\r\n  \"lastName\": \"Galvez\",\r\n  \"email\": \"andres@example.com\",\r\n  \"phone\": \"5201234567\",\r\n  \"role\": \"ATTENDEE\",\r\n  \"active\": true\r\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/registrations/4/status?newStatus=CONFIRMED",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "registrations",
+            "4",
+            "status"
+          ],
+          "query": [
+            {
+              "key": "registrationId",
+              "value": "1",
+              "type": "text",
+              "disabled": true
+            },
+            {
+              "key": "newStatus",
+              "value": "CONFIRMED"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Cancel Registration",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/registrations/4/cancel",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "registrations",
+            "4",
+            "cancel"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Check-In",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}",
+            "type": "text"
+          },
+          {
+            "key": "Authorization",
+            "value": "",
+            "type": "text",
+            "disabled": true
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/registrations/4/checkin",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "registrations",
+            "4",
+            "checkin"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Check-out",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}",
+            "type": "text"
+          },
+          {
+            "key": "Authorization",
+            "value": "",
+            "type": "text",
+            "disabled": true
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/registrations/4/checkout",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "registrations",
+            "4",
+            "checkout"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create Registration - Fail - Event not found",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"firstName\": \"Andres\",\r\n  \"lastName\": \"Galvez\",\r\n  \"email\": \"andres@example.com\",\r\n  \"phone\": \"5201234567\",\r\n  \"role\": \"ATTENDEE\",\r\n  \"active\": true\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8080/registrations?eventId=100&participantId=1",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "registrations"
+          ],
+          "query": [
+            {
+              "key": "eventId",
+              "value": "100"
+            },
+            {
+              "key": "participantId",
+              "value": "1"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create Registration - Fail - Event not open for registration",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}",
+            "type": "text"
+          },
+          {
+            "key": "Authorization",
+            "value": "",
+            "type": "text",
+            "disabled": true
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"firstName\": \"Andres\",\r\n  \"lastName\": \"Galvez\",\r\n  \"email\": \"andres@example.com\",\r\n  \"phone\": \"5201234567\",\r\n  \"role\": \"ATTENDEE\",\r\n  \"active\": true\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8080/registrations?eventId=2&participantId=1",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "registrations"
+          ],
+          "query": [
+            {
+              "key": "eventId",
+              "value": "2"
+            },
+            {
+              "key": "participantId",
+              "value": "1"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create Registration - Fail - Participant not found",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}",
+            "type": "text"
+          },
+          {
+            "key": "Authorization",
+            "value": "",
+            "type": "text",
+            "disabled": true
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"firstName\": \"Andres\",\r\n  \"lastName\": \"Galvez\",\r\n  \"email\": \"andres@example.com\",\r\n  \"phone\": \"5201234567\",\r\n  \"role\": \"ATTENDEE\",\r\n  \"active\": true\r\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/registrations?eventId=1&participantId=100",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "registrations"
+          ],
+          "query": [
+            {
+              "key": "eventId",
+              "value": "1"
+            },
+            {
+              "key": "participantId",
+              "value": "100"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create Registration - Fail - Participant inactive",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}",
+            "type": "text"
+          },
+          {
+            "key": "Authorization",
+            "value": "",
+            "type": "text",
+            "disabled": true
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"firstName\": \"Andres\",\r\n  \"lastName\": \"Galvez\",\r\n  \"email\": \"andres@example.com\",\r\n  \"phone\": \"5201234567\",\r\n  \"role\": \"ATTENDEE\",\r\n  \"active\": true\r\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/registrations?eventId=1&participantId=7",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "registrations"
+          ],
+          "query": [
+            {
+              "key": "eventId",
+              "value": "1"
+            },
+            {
+              "key": "participantId",
+              "value": "7"
+            }
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}

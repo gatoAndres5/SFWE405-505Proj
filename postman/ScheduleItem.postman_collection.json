@@ -1,0 +1,57 @@
+{
+  "info": {
+    "_postman_id": "449a3ba5-e169-4c8d-bbd6-7b27e0eef36d",
+    "name": "ScheduleItem",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "30177720",
+    "_collection_link": "https://go.postman.co/collection/30177720-449a3ba5-e169-4c8d-bbd6-7b27e0eef36d?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Create Schedule Item",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/schedule-items",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "schedule-items"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get all Schedule Items",
+      "request": {
+        "method": "GET",
+        "header": []
+      },
+      "response": []
+    },
+    {
+      "name": "Update Schedule Item",
+      "request": {
+        "method": "PUT",
+        "header": []
+      },
+      "response": []
+    },
+    {
+      "name": "Remove Schedule Item",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": ""
+        }
+      },
+      "response": []
+    }
+  ]
+}

@@ -1,63 +1,79 @@
 package com.example.demo.controller;
 
-import java.util.Date;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
 
-import com.example.demo.entity.Event;
-import com.example.demo.entity.Participant;
 import com.example.demo.entity.Registration;
 import com.example.demo.entity.RegistrationStatus;
-import com.example.demo.repository.EventRepository;
-import com.example.demo.repository.ParticipantRepository;
-import com.example.demo.repository.RegistrationRepository;
+import com.example.demo.service.RegistrationService;
 
 @RestController
 @RequestMapping("/registrations")
 public class RegistrationController {
 
-    @Autowired
-    private RegistrationRepository registrationRepository;
+    private final RegistrationService registrationService;
 
-    @Autowired
-    private EventRepository eventRepository;
+    public RegistrationController(RegistrationService registrationService) {
+        this.registrationService = registrationService;
+    }
 
-    @Autowired
-    private ParticipantRepository participantRepository;
-
+    // Participant OR Organizer OR Admin can register
+    @PreAuthorize("hasAnyRole('ADMIN','ORGANIZER','PARTICIPANT')")
     @PostMapping
     public Registration register(@RequestParam Long eventId,
                                  @RequestParam Long participantId) {
-
-        Event event = eventRepository.findById(eventId)
-                .orElseThrow(() -> new RuntimeException("Event not found"));
-
-        Participant participant = participantRepository.findById(participantId)
-                .orElseThrow(() -> new RuntimeException("Participant not found"));
-
-        Registration registration = new Registration(
-            event,
-            participant,
-            new Date(),
-            RegistrationStatus.CONFIRMED,
-            false,
-            null
-        );
-        registration.setEvent(event);
-        registration.setParticipant(participant);
-        registration.setRegistrationStatus(RegistrationStatus.CONFIRMED);
-
-        return registrationRepository.save(registration);
+        return registrationService.register(eventId, participantId);
     }
 
+    // Organizer + Staff + Admin can view all
+    @PreAuthorize("hasAnyRole('ADMIN','ORGANIZER','STAFF')")
     @GetMapping
     public List<Registration> getAllRegistrations() {
-        return registrationRepository.findAll();
+        return registrationService.getAllRegistrations();
+    }
+
+    // Everyone can view specific (optional, you can restrict more later)
+    @PreAuthorize("hasAnyRole('ADMIN','ORGANIZER','STAFF','PARTICIPANT')")
+    @GetMapping("/{id}")
+    public Registration getRegistrationById(@PathVariable Long id) {
+        return registrationService.getRegistrationById(id);
+    }
+
+    // Only Organizer + Admin can update status
+    @PreAuthorize("hasAnyRole('ADMIN','ORGANIZER')")
+    @PutMapping("/{id}/status")
+    public Registration updateStatus(@PathVariable Long id,
+                                     @RequestParam RegistrationStatus newStatus) {
+        return registrationService.updateStatus(id, newStatus);
+    }
+
+    // Only Organizer + Admin can cancel
+    @PreAuthorize("hasAnyRole('ADMIN','ORGANIZER')")
+    @PutMapping("/{id}/cancel")
+    public Registration cancelRegistration(@PathVariable Long id) {
+        return registrationService.cancelRegistration(id);
+    }
+
+    // Only Staff + Admin can check in
+    @PreAuthorize("hasAnyRole('ADMIN','STAFF')")
+    @PutMapping("/{id}/checkin")
+    public Registration checkIn(@PathVariable Long id) {
+        return registrationService.checkIn(id);
+    }
+
+    // Only Staff + Admin can check out
+    @PreAuthorize("hasAnyRole('ADMIN','STAFF')")
+    @PutMapping("/{id}/checkout")
+    public Registration checkOut(@PathVariable Long id) {
+        return registrationService.checkOut(id);
+    }
+
+    // Only Admin can delete permanently
+    @PreAuthorize("hasRole('ADMIN')")
+    @DeleteMapping("/{id}")
+    public void deleteRegistration(@PathVariable Long id) {
+        registrationService.deleteRegistration(id);
     }
 }

@@ -1,114 +1,81 @@
 package com.example.demo.entity;
 
-
-
-import java.util.Date;
-
 import jakarta.persistence.*;
+import java.time.LocalDateTime;
 
 @Entity
 public class Booking {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long bookingId;
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "event_id")
-    private Event event;
+    private String serviceDescription;
+    private LocalDateTime startDateTime;
+    private LocalDateTime endDateTime;
+    private String bookingStatus;
 
-    @ManyToOne(optional = false)
+    @ManyToOne
     @JoinColumn(name = "vendor_id")
     private Vendor vendor;
 
-    private String serviceDescription;
+    @ManyToOne
+    @JoinColumn(name = "event_id")
+    private Event event;
 
-    private Date startDateTime;
-
-    private Date endDateTime;
-
-    @Enumerated(EnumType.STRING)
-    private BookingStatus bookingStatus;
-
-    private Date createdAt;
-
-    private Date updatedAt;
-
-    protected Booking(){}
-
-    public Booking(Event event, Vendor vendor, String serviceDescription, Date startDateTime, Date endDateTime, BookingStatus bookingStatus){
-            this.event = event;
-            this.vendor = vendor;
-            this.serviceDescription = serviceDescription;
-            this.startDateTime = startDateTime;
-            this.endDateTime = endDateTime;
-            this.bookingStatus = bookingStatus;
+    public Long getBookingId() {
+        return bookingId;
     }
 
-    //GETTERS
-
-    public Event getEvent(){
-        return this.event;
+    public void setBookingId(Long bookingId) {
+        this.bookingId = bookingId;
     }
 
-    public Vendor getVendor(){
-        return this.vendor;
+    public String getServiceDescription() {
+        return serviceDescription;
     }
 
-    public String getServiceDescription(){
-        return this.serviceDescription;
+    public void setServiceDescription(String serviceDescription) {
+        this.serviceDescription = serviceDescription;
     }
 
-    public Date getStartDateTime(){
-        return this.startDateTime;
+    public LocalDateTime getStartDateTime() {
+        return startDateTime;
     }
 
-    public Date getEndDateTime(){
-        return this.endDateTime;
-    }
-
-    public BookingStatus getBookingStatus(){
-        return this.bookingStatus;
-    }
-
-    public Date getCreatedAt(){
-        return this.createdAt;
-    }
-
-    public Date getUpdatedAt(){
-        return this.updatedAt;
-    }
-
-    // SETTERS
-
-    public void setEvent(Event event){
-        this.event = event;
-    }
-
-    public void setVendor(Vendor vendor){
-        this.vendor = vendor;
-    }
-
-    public void setServiceDescription(String serviceDesciption){
-        this.serviceDescription  = serviceDesciption;
-    }
-
-    public void setStartDateTime(Date startDateTime){
+    public void setStartDateTime(LocalDateTime startDateTime) {
         this.startDateTime = startDateTime;
     }
 
-    public void setEndDateTime(Date endDateTime){
+    public LocalDateTime getEndDateTime() {
+        return endDateTime;
+    }
+
+    public void setEndDateTime(LocalDateTime endDateTime) {
         this.endDateTime = endDateTime;
     }
 
-    public void setBookingStatus(BookingStatus bookingStatus){
+    public String getBookingStatus() {
+        return bookingStatus;
+    }
+
+    public void setBookingStatus(String bookingStatus) {
         this.bookingStatus = bookingStatus;
     }
 
-    public void setCreatedAt(Date createdAt){
-        this.createdAt = createdAt;
+    public Vendor getVendor() {
+        return vendor;
     }
 
-    public void setUpdatedAt(Date updatedAt){
-        this.updatedAt = updatedAt;
+    public void setVendor(Vendor vendor) {
+        this.vendor = vendor;
+    }
+
+    public Event getEvent() {
+        return event;
+    }
+
+    public void setEvent(Event event) {
+        this.event = event;
     }
 }
