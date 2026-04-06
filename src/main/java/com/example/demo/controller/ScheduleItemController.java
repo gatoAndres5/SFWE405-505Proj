@@ -1,82 +1,160 @@
 package com.example.demo.controller;
 
+import java.time.LocalDateTime;
 import java.util.List;
-import org.springframework.beans.factory.annotation.Autowired;
+
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import com.example.demo.entity.ScheduleItem;
 import com.example.demo.service.ScheduleItemService;
 
+/**
+ * REST controller for managing schedule items within the event planning platform.
+ * Provides endpoints for creating, updating, rescheduling, and retrieving schedule details.
+ */
+
 @RestController
-@RequestMapping("/schedule-items") //get all schedule items
+@RequestMapping("/scheduleItems")
 public class ScheduleItemController {
 
-    @Autowired
-    private ScheduleItemService scheduleItemService;
+    private final ScheduleItemService scheduleItemService;
 
+    public ScheduleItemController(ScheduleItemService scheduleItemService) {
+        this.scheduleItemService = scheduleItemService;
+    }
+
+    /**
+     * Creates a new schedule item for a specific event and venue.
+     * Authorized Roles are ADMIN and ORGANIZER.
+     *
+     * @param eventId ID of the associated event
+     * @param venueId ID of the assigned venue
+     * @param title Title of the schedule item
+     * @param description Brief description of the activity
+     * @param startDateTime The scheduled start time
+     * @param endDateTime The scheduled end time
+     * @param type The category of the item (e.g., Workshop, Keynote)
+     * @return The created ScheduleItem entity
+     */
+    @PreAuthorize("hasAnyRole('ADMIN', 'ORGANIZER')")
+    @PostMapping 
+    public ScheduleItem createScheduleItem(@RequestParam Long eventId, 
+                                           @RequestParam Long venueId, 
+                                           @RequestParam String title, 
+                                           @RequestParam String description,
+                                           @RequestParam LocalDateTime startDateTime, 
+                                           @RequestParam LocalDateTime endDateTime,
+                                           @RequestParam String type) {
+        return scheduleItemService.createScheduleItem(eventId, venueId, title, description, startDateTime, endDateTime, type);
+    }
+
+    /**
+     * Retrieves a list of all schedule items in the system.
+     * Accessible by ADMIN, ORGANIZER, STAFF, and PARTICIPANT.
+     *
+     * @return List of all ScheduleItems
+     */
+    @PreAuthorize("hasAnyRole('ADMIN', 'ORGANIZER', 'STAFF', 'PARTICIPANT')")
     @GetMapping
     public List<ScheduleItem> getAllScheduleItems() {
         return scheduleItemService.getAllScheduleItems();
     }
 
-    @GetMapping("/{id}") //get schedule item by id
+    /**
+     * Retrieves the details of a specific schedule item by its ID.
+     * Accessible by ADMIN, ORGANIZER, STAFF, and PARTICIPANT.
+     *
+     * @param id The ID of the schedule item to retrieve
+     * @return The found ScheduleItem entity
+     */
+    @PreAuthorize("hasAnyRole('ADMIN', 'ORGANIZER', 'STAFF', 'PARTICIPANT')")
+    @GetMapping("/{id}")
     public ScheduleItem getScheduleItemById(@PathVariable Long id) {
         return scheduleItemService.getScheduleItemById(id);
     }
 
-    @PostMapping //create schedule item
-    public ScheduleItem createScheduleItem(@RequestBody ScheduleItemRequest request) {
-        return scheduleItemService.createScheduleItem(
-            request.eventId, request.venueId, request.title, request.description,
-            request.startDateTime, request.endDateTime, request.type
-        );
-    }
-
-    @PutMapping("/{id}") //update schedule item
-    public ScheduleItem updateScheduleItem(@PathVariable Long id, @RequestBody ScheduleItemRequest request) {
-        return scheduleItemService.updateScheduleItem(
-            id, request.eventId, request.venueId, request.title, request.description,
-            request.startDateTime, request.endDateTime, request.type
-        );
-    }
-
-    @DeleteMapping("/{id}") //delete schedule item
-    public void deleteScheduleItem(@PathVariable Long id) {
-        scheduleItemService.removeFromSchedule(id);
-    }
-
-    @PutMapping("/{id}/reschedule") //reschedule an existing item
-    public ScheduleItem rescheduleItem(@PathVariable Long id, @RequestBody RescheduleRequest request) {
-        return scheduleItemService.reschedule(id, request.newStart, request.newEnd);
-    }
-
-    @PutMapping("/{id}/assign-venue") //assign a new venue to schedule item
-    public ScheduleItem assignVenue(@PathVariable Long id, @RequestBody AssignVenueRequest request) {
-        return scheduleItemService.assignVenue(id, request.venueId);
-    }
-
-    @GetMapping("/{id}/duration") //get duration of schedule item
+    /**
+     * Calculates and returns the duration of a specific schedule item.
+     * Accessible by ADMIN, ORGANIZER, STAFF, and PARTICIPANT.
+     *
+     * @param id The ID of the schedule item
+     * @return A Duration object representing the time between start and end
+     */
+    @PreAuthorize("hasAnyRole('ADMIN', 'ORGANIZER', 'STAFF', 'PARTICIPANT')")
+    @GetMapping("/{id}/duration")
     public java.time.Duration getDuration(@PathVariable Long id) {
         return scheduleItemService.getDuration(id);
     }
 
-    //request body for schedule item operations
-    public static class ScheduleItemRequest {
-        public Long eventId;
-        public Long venueId;
-        public String title;
-        public String description;
-        public java.time.LocalDateTime startDateTime;
-        public java.time.LocalDateTime endDateTime;
-        public String type;
+    /**
+     * Updates all details of an existing schedule item.
+     * Authorized Roles are ADMIN and ORGANIZER.
+     *
+     * @param id The ID of the schedule item to update
+     * @param eventId Updated event ID
+     * @param venueId Updated venue ID
+     * @param title Updated title
+     * @param description Updated description
+     * @param startDateTime Updated start time
+     * @param endDateTime Updated end time
+     * @param type Updated category/type
+     * @return The updated ScheduleItem entity
+     */
+    @PreAuthorize("hasAnyRole('ADMIN', 'ORGANIZER')")
+    @PutMapping("/{id}")
+    public ScheduleItem updateScheduleItem(@PathVariable Long id,
+                                           @RequestParam Long eventId,
+                                           @RequestParam Long venueId,
+                                           @RequestParam String title,
+                                           @RequestParam String description,
+                                           @RequestParam LocalDateTime startDateTime,
+                                           @RequestParam LocalDateTime endDateTime,
+                                           @RequestParam String type) {
+        return scheduleItemService.updateScheduleItem(id, eventId, venueId, title, description, startDateTime, endDateTime, type);
     }
 
-    public static class RescheduleRequest {
-        public java.time.LocalDateTime newStart;
-        public java.time.LocalDateTime newEnd;
+    /**
+     * Updates only the time window for a specific schedule item (Rescheduling).
+     * Authorized Roles are ADMIN and ORGANIZER.
+     *
+     * @param id The ID of the schedule item
+     * @param startDateTime The new start time
+     * @param endDateTime The new end time
+     * @return The rescheduled ScheduleItem entity
+     */
+    @PreAuthorize("hasAnyRole('ADMIN', 'ORGANIZER')")
+    @PutMapping("/{id}/reschedule")
+    public ScheduleItem rescheduleItem(@PathVariable Long id,
+                                       @RequestParam LocalDateTime startDateTime,
+                                       @RequestParam LocalDateTime endDateTime) {
+        return scheduleItemService.reschedule(id, startDateTime, endDateTime);
     }
 
-    public static class AssignVenueRequest {
-        public Long venueId;
+    /**
+     * Changes the venue assigned to a specific schedule item.
+     * Authorized Roles are ADMIN and ORGANIZER.
+     *
+     * @param id The ID of the schedule item
+     * @param venueId The new venue ID to be assigned
+     * @return The updated ScheduleItem entity
+     */
+    @PreAuthorize("hasAnyRole('ADMIN', 'ORGANIZER')")
+    @PutMapping("/{id}/assignVenue")
+    public ScheduleItem assignVenue(@PathVariable Long id,
+                                    @RequestParam Long venueId) {
+        return scheduleItemService.assignVenue(id, venueId);
+    }
+
+    /**
+     * Permanently removes a schedule item from the system.
+     * Authorized Roles are ADMIN and ORGANIZER.
+     *
+     * @param id The ID of the schedule item to delete
+     */
+    @PreAuthorize("hasAnyRole('ADMIN', 'ORGANIZER')")
+    @DeleteMapping("/{id}") 
+    public void removeFromSchedule(@PathVariable Long id) {
+        scheduleItemService.removeFromSchedule(id);
     }
 }
