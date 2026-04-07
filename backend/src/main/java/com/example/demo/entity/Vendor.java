@@ -31,7 +31,7 @@ public class Vendor {
     @OneToMany(mappedBy = "vendor", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Booking> bookings = new ArrayList<>();
 
-    protected Vendor() {
+    public Vendor() {
     }
 
     public Vendor(String name, String contactName, String contactPhone,

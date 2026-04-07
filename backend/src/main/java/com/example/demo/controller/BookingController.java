@@ -19,7 +19,16 @@ public class BookingController {
         this.bookingService = bookingService;
     }
 
-    // Organizer + Admin can create a booking
+    /**
+     * Creates a new booking in the system.
+     * 
+     * @param eventID ID of the event
+     * @param vendorID ID of the vendor
+     * @param serviceDescription description of the service
+     * @param startDateTime booking start time
+     * @param endDateTime booking end time
+     * @return the created booking
+     */
     @PreAuthorize("hasAnyRole('ADMIN','ORGANIZER')")
     @PostMapping
     public Booking createBooking(@RequestParam Long eventId,
@@ -36,21 +45,38 @@ public class BookingController {
         );
     }
 
-    // Organizer + Admin can view all bookings
+    /**
+     * Retrieves all bookings 
+     * 
+     * @return list of bookings
+     */
     @PreAuthorize("hasAnyRole('ADMIN','ORGANIZER')")
     @GetMapping
     public List<Booking> getAllBookings() {
         return bookingService.getAllBookings();
     }
 
-    // Organizer + Admin can view a specific booking
+    /**
+     * Retrieves a booking by its ID
+     * 
+     * @param id booking ID
+     * @return the requested booking
+     */
     @PreAuthorize("hasAnyRole('ADMIN','ORGANIZER')")
     @GetMapping("/{id}")
     public Booking getBookingById(@PathVariable Long id) {
         return bookingService.getBookingById(id);
     }
 
-    // Organizer + Admin can update requested bookings
+    /**
+     * Updates an existing booking
+     * 
+     * @param id booking ID
+     * @param serviceDescription updated description
+     * @param startDateTime updated start time
+     * @param endDateTime updated end time
+     * @return updated booking
+     */
     @PreAuthorize("hasAnyRole('ADMIN','ORGANIZER')")
     @PutMapping("/{id}")
     public Booking updateBooking(@PathVariable Long id,
@@ -65,21 +91,36 @@ public class BookingController {
         );
     }
 
-    // Organizer + Admin can confirm
+    /**
+     * Confirms a booking
+     * 
+     * @param id booking ID
+     * @return confirmed booking
+     */
     @PreAuthorize("hasAnyRole('ADMIN','ORGANIZER')")
     @PutMapping("/{id}/confirm")
     public Booking confirmBooking(@PathVariable Long id) {
         return bookingService.confirmBooking(id);
     }
 
-    // Organizer + Admin can cancel
+    /**
+     * Deletes a booking by ID
+     * 
+     * @param id booking ID
+     * @return cancelled booking
+     */
     @PreAuthorize("hasAnyRole('ADMIN','ORGANIZER')")
     @PutMapping("/{id}/cancel")
     public Booking cancelBooking(@PathVariable Long id) {
         return bookingService.cancelBooking(id);
     }
 
-    // Organizer + Admin can mark complete
+    /**
+     * Marks a booking as complete 
+     * 
+     * @param id booking ID
+     * @return completed booking
+     */
     @PreAuthorize("hasAnyRole('ADMIN','ORGANIZER')")
     @PutMapping("/{id}/complete")
     public Booking markComplete(@PathVariable Long id) {
