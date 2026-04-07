@@ -100,7 +100,26 @@ public class Event {
     }
 
     //getters
+    //new modification
+    public List<Venue> getVenues(){
+        return venues;
+    }
 
+    public List<Vendor> getVendors(){
+        return vendors;
+    }
+
+    public List <ScheduleItem> getScheduledItems(){
+        return scheduledItems;
+    }
+
+    public List <Registration> getRegistrations(){
+        return registrations;
+    }
+
+    public Long getId(){
+        return this.id;
+    }
     public String getName(){
         return this.name;
     }
@@ -130,6 +149,14 @@ public class Event {
     }
 
     //setters
+    //new 
+    public void setVenues(List<Venue> venues){
+        this.venues = venues;
+    }
+
+    public void setVendors(List<Vendor> vendors){
+    this.vendors = vendors;
+    }
      public void setName(String name){
         this.name = name;
     }
@@ -156,6 +183,25 @@ public class Event {
 
     public void setUpdateTime(LocalDateTime updatedAt){
         this.updatedAt = updatedAt;
+    }
+
+    //venue helpers
+
+    //add venue
+    public void addVenue(Venue venue){
+        if(!this.venues.contains(venue)){
+            this.venues.add(venue);
+        }
+        if(!venue.getEvents().contains(this)){
+            venue.getEvents().add(this);
+        }
+            
+    }
+
+    //remove venue
+    public void removeVenue(Venue venue){
+        this.venues.remove(venue);
+        venue.getEvents().remove(this);
     }
 
 }
