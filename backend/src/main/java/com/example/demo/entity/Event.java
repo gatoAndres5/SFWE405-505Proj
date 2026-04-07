@@ -78,7 +78,7 @@ public class Event {
 
     //constructors
 
-    protected Event(){}
+    public Event(){}
 
     public Event(String name, String description, LocalDateTime startDateTime, LocalDateTime endDateTime){
         this.name = name;
