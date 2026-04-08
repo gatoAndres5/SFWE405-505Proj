@@ -9,6 +9,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.ArrayList;
@@ -26,6 +27,7 @@ public class Venue {
     private List<Event> events = new ArrayList<>();
 
     @OneToMany(mappedBy = "venue", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private List<ScheduleItem> scheduleItems = new ArrayList<>();
 
     private String name;

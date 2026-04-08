@@ -7,6 +7,7 @@ import jakarta.persistence.Id;
 
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.JoinColumn;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.time.LocalDateTime;
 
 @Entity
@@ -17,10 +18,12 @@ public class ScheduleItem {
 
     @ManyToOne
     @JoinColumn(name = "event_id")
+    @JsonIgnore
     private Event event;
     
     @ManyToOne
     @JoinColumn(name = "venue_id")
+    @JsonIgnore
     private Venue venue;
 
     private String title;

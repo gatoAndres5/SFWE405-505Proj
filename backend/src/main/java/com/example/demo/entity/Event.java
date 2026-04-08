@@ -48,6 +48,7 @@ public class Event {
     //relationships
 
     @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private List<ScheduleItem> scheduledItems = new ArrayList<>();
 
 /*  won't show the participant and will delete all of the RSVP information
