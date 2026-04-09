@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import java.time.LocalDateTime;
 import java.util.Map;
 
+import com.example.demo.entity.Address;
 import com.example.demo.entity.Event;
 import com.example.demo.entity.EventStatus;
 import com.example.demo.entity.ScheduleItem;
@@ -95,9 +96,16 @@ public class ScheduleItemIntegrationTest {
             LocalDateTime.parse("2026-04-15T18:00:00"));
         savedEvent = eventRepository.save(event);
 
+        Address address = new Address(
+            "742 Evergreen Terrace",
+            "Springfield",
+            "IL",
+            "62704",
+            "USA"
+        );
         Venue venue = new Venue(
             "Main Ballroom",
-            "123 Test St",
+            address,
             200,
             "John Manager",
             "555-1234",
@@ -274,10 +282,16 @@ public class ScheduleItemIntegrationTest {
     @DisplayName("PUT /scheduleItems/{id}/assignVenue assigns new venue for ADMIN")
     void assignVenue_shouldSucceed_forAdmin() {
         ScheduleItem item = createTestScheduleItem();
-        
+        Address address2 = new Address(
+            "745 Evergreen Terrace",
+            "Springfield",
+            "IL",
+            "62704",
+            "USA"
+        );
         Venue venue2 = new Venue(
             "Secondary Hall",
-            "456 Another St",
+            address2,
             150,
             "Jane Admin",
             "555-5678",

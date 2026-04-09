@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import java.time.LocalDateTime;
 import java.util.Map;
 
+import com.example.demo.entity.Address;
 import com.example.demo.entity.Booking;
 import com.example.demo.entity.BookingStatus;
 import com.example.demo.entity.Event;
@@ -103,9 +104,22 @@ class BookingIntegrationTest {
         );
         event = eventRepository.save(event);
 
-        vendor = new Vendor();
-        vendor.setName("Catering Co");
-        vendor.setActive(true);
+        Address address = new Address(
+                "Baghdad Street",
+                "Baghdad",
+                "BG",
+                "10001",
+                "Iraq"
+        );
+
+        vendor = new Vendor(
+                "Catering Co",
+                "Sarah",
+                "1234567890",
+                "sarah@test.com",
+                address,
+                true
+        );
         vendor = vendorRepository.save(vendor);
 
         adminToken = loginAndGetToken("admin", "admin123");

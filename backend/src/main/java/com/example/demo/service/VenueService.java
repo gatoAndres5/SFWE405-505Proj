@@ -1,6 +1,7 @@
 package com.example.demo.service;
 
 import com.example.demo.entity.Venue;
+import com.example.demo.entity.Address;
 import com.example.demo.entity.ScheduleItem;
 import com.example.demo.repository.VenueRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +23,7 @@ public class VenueService {
 
     //BUSINESS METHODS
     
-    public Venue createVenue(String name, String address, int capacity, 
+    public Venue createVenue(String name, Address address, int capacity, 
                            String contactName, String contactEmail, String contactPhone) {
         if (name == null || name.trim().isEmpty()) {
             throw new IllegalArgumentException("Venue name cannot be null or empty");
@@ -35,7 +36,7 @@ public class VenueService {
         return venueRepository.save(venue);
     }
     
-    public Venue updateVenue(Long venueId, String name, String address, int capacity, 
+    public Venue updateVenue(Long venueId, String name, Address address, int capacity, 
                           String contactName, String contactEmail, String contactPhone) {
         Venue venue = venueRepository.findById(venueId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Venue not found with id: " + venueId));
