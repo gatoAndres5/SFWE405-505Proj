@@ -13,7 +13,7 @@ public class Booking {
     private String serviceDescription;
     private LocalDateTime startDateTime;
     private LocalDateTime endDateTime;
-    private String bookingStatus;
+    private BookingStatus bookingStatus;
 
     @ManyToOne
     @JoinColumn(name = "vendor_id")
@@ -22,6 +22,17 @@ public class Booking {
     @ManyToOne
     @JoinColumn(name = "event_id")
     private Event event;
+
+    protected Booking(){}
+
+    public Booking(Event event, Vendor vendor, String serviceDescription,
+               LocalDateTime startDateTime, LocalDateTime endDateTime) {
+        this.event = event;
+        this.vendor = vendor;
+        this.serviceDescription = serviceDescription;
+        this.startDateTime = startDateTime;
+        this.endDateTime = endDateTime;
+    }
 
     public Long getBookingId() {
         return bookingId;
@@ -55,11 +66,11 @@ public class Booking {
         this.endDateTime = endDateTime;
     }
 
-    public String getBookingStatus() {
+    public BookingStatus getBookingStatus() {
         return bookingStatus;
     }
 
-    public void setBookingStatus(String bookingStatus) {
+    public void setBookingStatus(BookingStatus bookingStatus) {
         this.bookingStatus = bookingStatus;
     }
 

@@ -76,6 +76,20 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(403).body(body);
     }
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ApiError> handleIllegalArgumentException(
+            IllegalArgumentException ex,
+            HttpServletRequest request
+    ) {
+        ApiError body = new ApiError(
+                Instant.now().toString(),
+                400,
+                ex.getMessage(),
+                request.getRequestURI()
+        );
+        return ResponseEntity.status(400).body(body);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiError> handleGeneralException(
             Exception ex,

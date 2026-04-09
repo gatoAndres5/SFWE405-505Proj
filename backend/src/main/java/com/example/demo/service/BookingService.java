@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.example.demo.entity.Booking;
+import com.example.demo.entity.BookingStatus;
 import com.example.demo.entity.Event;
 import com.example.demo.entity.EventStatus;
 import com.example.demo.entity.Vendor;
@@ -18,11 +19,6 @@ import com.example.demo.repository.VendorRepository;
 
 @Service
 public class BookingService {
-
-    private static final String REQUESTED = "REQUESTED";
-    private static final String CONFIRMED = "CONFIRMED";
-    private static final String CANCELLED = "CANCELLED";
-    private static final String COMPLETED = "COMPLETED";
 
     private final BookingRepository bookingRepository;
     private final EventRepository eventRepository;
@@ -70,7 +66,7 @@ public class BookingService {
         boolean overlapExists =
                 bookingRepository.existsByVendor_IdAndBookingStatusAndStartDateTimeLessThanAndEndDateTimeGreaterThan(
                         vendorId,
-                        CONFIRMED,
+                        BookingStatus.CONFIRMED,
                         endDateTime,
                         startDateTime
                 );
@@ -82,13 +78,15 @@ public class BookingService {
             );
         }
 
-        Booking booking = new Booking();
-        booking.setEvent(event);
-        booking.setVendor(vendor);
-        booking.setServiceDescription(serviceDescription);
-        booking.setStartDateTime(startDateTime);
-        booking.setEndDateTime(endDateTime);
-        booking.setBookingStatus(REQUESTED);
+        Booking booking = new Booking(
+                event,
+                vendor,
+                serviceDescription,
+                startDateTime,
+                endDateTime
+        );
+
+        booking.setBookingStatus(BookingStatus.REQUESTED);
 
         return bookingRepository.save(booking);
     }
@@ -117,7 +115,7 @@ public class BookingService {
                         HttpStatus.NOT_FOUND, "Booking not found."
                 ));
 
-        if (!REQUESTED.equalsIgnoreCase(booking.getBookingStatus())) {
+        if (booking.getBookingStatus() != BookingStatus.REQUESTED) {
             throw new ResponseStatusException(
                     HttpStatus.CONFLICT,
                     "Only requested bookings may be updated."
@@ -129,7 +127,7 @@ public class BookingService {
         boolean overlapExists =
                 bookingRepository.existsByVendor_IdAndBookingStatusAndStartDateTimeLessThanAndEndDateTimeGreaterThanAndBookingIdNot(
                         booking.getVendor().getId(),
-                        CONFIRMED,
+                        BookingStatus.CONFIRMED,
                         endDateTime,
                         startDateTime,
                         booking.getBookingId()
@@ -156,14 +154,14 @@ public class BookingService {
                         HttpStatus.NOT_FOUND, "Booking not found."
                 ));
 
-        if (CANCELLED.equalsIgnoreCase(booking.getBookingStatus())) {
+        if (booking.getBookingStatus() == BookingStatus.CANCELLED) {
             throw new ResponseStatusException(
                     HttpStatus.CONFLICT,
                     "A cancelled booking may not be re-confirmed."
             );
         }
 
-        if (!REQUESTED.equalsIgnoreCase(booking.getBookingStatus())) {
+        if (booking.getBookingStatus() != BookingStatus.REQUESTED) {
             throw new ResponseStatusException(
                     HttpStatus.CONFLICT,
                     "Only requested bookings may be confirmed."
@@ -180,7 +178,7 @@ public class BookingService {
         boolean overlapExists =
                 bookingRepository.existsByVendor_IdAndBookingStatusAndStartDateTimeLessThanAndEndDateTimeGreaterThanAndBookingIdNot(
                         booking.getVendor().getId(),
-                        CONFIRMED,
+                        BookingStatus.CONFIRMED,
                         booking.getEndDateTime(),
                         booking.getStartDateTime(),
                         booking.getBookingId()
@@ -193,7 +191,7 @@ public class BookingService {
             );
         }
 
-        booking.setBookingStatus(CONFIRMED);
+        booking.setBookingStatus(BookingStatus.CONFIRMED);
         return bookingRepository.save(booking);
     }
 
@@ -204,14 +202,14 @@ public class BookingService {
                         HttpStatus.NOT_FOUND, "Booking not found."
                 ));
 
-        if (COMPLETED.equalsIgnoreCase(booking.getBookingStatus())) {
+        if (booking.getBookingStatus() == BookingStatus.COMPLETED) {
             throw new ResponseStatusException(
                     HttpStatus.CONFLICT,
                     "Completed booking cannot be cancelled."
             );
         }
 
-        booking.setBookingStatus(CANCELLED);
+        booking.setBookingStatus(BookingStatus.CANCELLED);
         return bookingRepository.save(booking);
     }
 
@@ -222,7 +220,7 @@ public class BookingService {
                         HttpStatus.NOT_FOUND, "Booking not found."
                 ));
 
-        if (!CONFIRMED.equalsIgnoreCase(booking.getBookingStatus())) {
+        if (booking.getBookingStatus() != BookingStatus.CONFIRMED) {
             throw new ResponseStatusException(
                     HttpStatus.CONFLICT,
                     "Only confirmed bookings may be marked completed."
@@ -237,7 +235,7 @@ public class BookingService {
             );
         }
 
-        booking.setBookingStatus(COMPLETED);
+        booking.setBookingStatus(BookingStatus.COMPLETED);
         return bookingRepository.save(booking);
     }
 

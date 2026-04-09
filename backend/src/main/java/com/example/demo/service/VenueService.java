@@ -6,6 +6,8 @@ import com.example.demo.repository.VenueRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -36,7 +38,7 @@ public class VenueService {
     public Venue updateVenue(Long venueId, String name, String address, int capacity, 
                           String contactName, String contactEmail, String contactPhone) {
         Venue venue = venueRepository.findById(venueId)
-            .orElseThrow(() -> new IllegalArgumentException("Venue not found with id: " + venueId));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Venue not found with id: " + venueId));
         
         if (name != null && !name.trim().isEmpty()) {
             venue.setName(name);
@@ -63,7 +65,7 @@ public class VenueService {
     
     public void deactivateVenue(Long venueId) {
         Venue venue = venueRepository.findById(venueId)
-            .orElseThrow(() -> new IllegalArgumentException("Venue not found with id: " + venueId));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Venue not found with id: " + venueId));
         
         venue.setUpdatedAt(LocalDateTime.now());
         venueRepository.save(venue);
@@ -78,7 +80,7 @@ public class VenueService {
         }
         
         Venue venue = venueRepository.findById(venueId)
-            .orElseThrow(() -> new IllegalArgumentException("Venue not found with id: " + venueId));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Venue not found with id: " + venueId));
         
         for (ScheduleItem item : venue.getScheduleItems()) {
             if (item.getStartDateTime().isBefore(endDateTime) && 
@@ -95,7 +97,7 @@ public class VenueService {
         }
         
         Venue venue = venueRepository.findById(venueId)
-            .orElseThrow(() -> new IllegalArgumentException("Venue not found with id: " + venueId));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Venue not found with id: " + venueId));
         
         List<ScheduleItem> filteredItems = new ArrayList<>();
         for (ScheduleItem item : venue.getScheduleItems()) {
@@ -113,7 +115,7 @@ public class VenueService {
     
     public Venue getVenueById(Long venueId) {
         return venueRepository.findById(venueId)
-            .orElseThrow(() -> new IllegalArgumentException("Venue not found with id: " + venueId));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Venue not found with id: " + venueId));
     }
     
     public List<Venue> getAllVenues() {
@@ -122,7 +124,7 @@ public class VenueService {
     
     public void deleteVenue(Long venueId) {
         if (!venueRepository.existsById(venueId)) {
-            throw new IllegalArgumentException("Venue not found with id: " + venueId);
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Venue not found with id: " + venueId);
         }
         venueRepository.deleteById(venueId);
     }
