@@ -1,38 +1,154 @@
 package com.example.demo.controller;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
 
 import com.example.demo.entity.Event;
-import com.example.demo.repository.EventRepository;
+import com.example.demo.entity.Participant;
+import com.example.demo.entity.ScheduleItem;
+import com.example.demo.entity.Vendor;
+import com.example.demo.entity.Venue;
+import com.example.demo.service.EventService;
 
 @RestController
 @RequestMapping("/events")
 public class EventController {
 
-    @Autowired
-    private EventRepository eventRepository;
+    private final EventService eventService;
 
-    @PostMapping
-    public Event createEvent(@RequestBody Event event) {
-        return eventRepository.save(event);
+    public EventController(EventService eventService) {
+        this.eventService = eventService;
     }
 
+    public static class EventRequest {
+        @NotBlank
+        public String name;
+
+        @NotBlank
+        public String description;
+
+        @NotNull
+        public LocalDateTime startDateTime;
+
+        @NotNull
+        public LocalDateTime endDateTime;
+    }
+
+    public static class EventUpdateRequest {
+        public String name;
+        public String description;
+        public LocalDateTime startDateTime;
+        public LocalDateTime endDateTime;
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping
+    public Event createEvent(@Valid @RequestBody EventRequest request) {
+        return eventService.createEvent(
+            request.name,
+            request.description,
+            request.startDateTime,
+            request.endDateTime
+        );
+    }
+
+    @PreAuthorize("isAuthenticated()")
     @GetMapping
     public List<Event> getAllEvents() {
-        return eventRepository.findAll();
+        return eventService.getAllEvents();
     }
 
-    @GetMapping("/{id}")
-    public Event getEvent(@PathVariable Long id) {
-        return eventRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Event not found"));
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/{eventId}")
+    public Event getEventById(@PathVariable Long eventId) {
+        return eventService.getEventById(eventId);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PutMapping("/{eventId}")
+    public Event updateEvent(
+        @PathVariable Long eventId,
+        @RequestBody EventUpdateRequest request
+    ) {
+        return eventService.updateEventDetails(
+            eventId,
+            request.name,
+            request.description,
+            request.startDateTime,
+            request.endDateTime
+        );
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PutMapping("/{eventId}/cancel")
+    public Event cancelEvent(@PathVariable Long eventId) {
+        return eventService.cancelEvent(eventId);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/{eventId}/venues/{venueId}")
+    public Event addVenue(
+        @PathVariable Long eventId,
+        @PathVariable Long venueId
+    ) {
+        return eventService.addVenueToEvent(eventId, venueId);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @DeleteMapping("/{eventId}/venues/{venueId}")
+    public Event removeVenue(
+        @PathVariable Long eventId,
+        @PathVariable Long venueId
+    ) {
+        return eventService.removeVenueFromEvent(eventId, venueId);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/{eventId}/schedule")
+    public Event addScheduleItem(
+        @PathVariable Long eventId,
+        @RequestBody ScheduleItem item
+    ) {
+        return eventService.addScheduleItem(eventId, item);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @DeleteMapping("/{eventId}/schedule/{scheduleItemId}")
+    public Event removeScheduleItem(
+        @PathVariable Long eventId,
+        @PathVariable Long scheduleItemId
+    ) {
+        return eventService.removeScheduleItem(eventId, scheduleItemId);
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/{eventId}/participants")
+    public List<Participant> listParticipants(@PathVariable Long eventId) {
+        return eventService.listParticipants(eventId);
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/{eventId}/vendors")
+    public List<Vendor> listVendors(@PathVariable Long eventId) {
+        return eventService.listEventVendors(eventId);
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/{eventId}/venues")
+    public List<Venue> listVenues(@PathVariable Long eventId) {
+        return eventService.listEventVenues(eventId);
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/{eventId}/scheduleitems")
+    public List<ScheduleItem> listScheduleItems(@PathVariable Long eventId) {
+        return eventService.listEventScheduledItems(eventId);
     }
 }
