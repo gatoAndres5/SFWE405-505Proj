@@ -2,7 +2,9 @@ package com.example.demo.service;
 
 import java.util.List;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.example.demo.entity.Participant;
 import com.example.demo.repository.ParticipantRepository;
@@ -62,12 +64,18 @@ public class ParticipantService {
 
     public Participant getParticipantById(Long id) {
         return participantRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Participant not found with id: " + id));
+            .orElseThrow(() -> new ResponseStatusException(
+                HttpStatus.NOT_FOUND,
+                "Participant not found with id: " + id
+            ));
     }
 
     public Participant updateParticipant(Long id, Participant updatedParticipant) {
         Participant existingParticipant = participantRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Participant not found with id: " + id));
+            .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.NOT_FOUND,
+            "Participant not found with id: " + id
+        ));
 
         existingParticipant.setFirstName(updatedParticipant.getFirstName());
         existingParticipant.setLastName(updatedParticipant.getLastName());
@@ -80,11 +88,13 @@ public class ParticipantService {
     }
 
     public void deleteParticipant(Long id) {
-        if (!participantRepository.existsById(id)) {
-            throw new RuntimeException("Participant not found with id: " + id);
-        }
+        Participant participant = participantRepository.findById(id)
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.NOT_FOUND,
+            "Participant not found with id: " + id
+        ));
 
-        participantRepository.deleteById(id);
+        participantRepository.delete(participant);
     }
 
     public Participant deactivateParticipant(Long id) {

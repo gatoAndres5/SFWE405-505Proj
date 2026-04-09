@@ -3,6 +3,7 @@ package com.example.demo.controller;
 import java.time.Instant;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -28,20 +29,6 @@ public class GlobalExceptionHandler {
                 Instant.now().toString(),
                 400,
                 message,
-                request.getRequestURI()
-        );
-        return ResponseEntity.badRequest().body(body);
-    }
-
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ApiError> handleIllegalArgumentException(
-            IllegalArgumentException ex,
-            HttpServletRequest request
-    ) {
-        ApiError body = new ApiError(
-                Instant.now().toString(),
-                400,
-                ex.getMessage(),
                 request.getRequestURI()
         );
         return ResponseEntity.badRequest().body(body);
@@ -92,17 +79,33 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiError> handleGeneralException(
-            Exception ex,
-            HttpServletRequest request
-    ) {
+                Exception ex,
+                HttpServletRequest request
+        ) {
+        ex.printStackTrace();
+
         ApiError body = new ApiError(
                 Instant.now().toString(),
                 500,
-                "Internal server error",
+                ex.getClass().getSimpleName() + ": " + ex.getMessage(),
                 request.getRequestURI()
         );
         return ResponseEntity.status(500).body(body);
-    }
+     }
+
+     @ExceptionHandler(HttpMessageNotReadableException.class)
+     public ResponseEntity<ApiError> handleHttpMessageNotReadable(
+                HttpMessageNotReadableException ex,
+                HttpServletRequest request
+        ) {
+        ApiError body = new ApiError(
+                Instant.now().toString(),
+                400,
+                "Malformed or invalid request body",
+                request.getRequestURI()
+        );
+        return ResponseEntity.badRequest().body(body);
+      }
 
     public static class ApiError {
         public String timestamp;
