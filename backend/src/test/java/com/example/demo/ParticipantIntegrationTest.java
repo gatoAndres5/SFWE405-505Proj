@@ -128,7 +128,27 @@ public class ParticipantIntegrationTest {
             .jsonPath("$.lastName").isEqualTo("Smith")
             .jsonPath("$.email").isEqualTo("alice@test.com")
             .jsonPath("$.role").isEqualTo("ATTENDEE")
-            .jsonPath("$.active").isEqualTo(true);
+            .jsonPath("$.active").isEqualTo(true)
+            .jsonPath("$.createdAt").exists()
+            .jsonPath("$.updatedAt").exists();
+    }
+
+    @Test
+    @DisplayName("POST /participants returns unauthorized when no token is provided")
+    void createParticipant_shouldFail_whenUnauthorized() {
+        webTestClient.post()
+            .uri("/participants")
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(Map.of(
+                "firstName", "Alice",
+                "lastName", "Smith",
+                "email", "alice2@test.com",
+                "phone", "5551234567",
+                "role", "ATTENDEE",
+                "active", true
+            ))
+            .exchange()
+            .expectStatus().isForbidden();
     }
 
     @Test
@@ -158,13 +178,13 @@ public class ParticipantIntegrationTest {
     }
 
     @Test
-    @DisplayName("GET /participants/{id} returns server error when participant not found")
+    @DisplayName("GET /participants/{id} returns not found when participant not found")
     void getParticipantById_shouldFail_whenMissing() {
         webTestClient.get()
             .uri("/participants/{id}", 999999L)
             .header(HttpHeaders.AUTHORIZATION, "Bearer " + participantToken)
             .exchange()
-            .expectStatus().is5xxServerError();
+            .expectStatus().isNotFound();
     }
 
     @Test
@@ -189,11 +209,12 @@ public class ParticipantIntegrationTest {
             .jsonPath("$.email").isEqualTo("johnny@test.com")
             .jsonPath("$.phone").isEqualTo("9998887777")
             .jsonPath("$.role").isEqualTo("SPEAKER")
-            .jsonPath("$.active").isEqualTo(true);
+            .jsonPath("$.active").isEqualTo(true)
+            .jsonPath("$.updatedAt").exists();
     }
 
     @Test
-    @DisplayName("PUT /participants/{id} returns server error when participant not found")
+    @DisplayName("PUT /participants/{id} returns not found when participant not found")
     void updateParticipant_shouldFail_whenMissing() {
         webTestClient.put()
             .uri("/participants/{id}", 999999L)
@@ -208,7 +229,7 @@ public class ParticipantIntegrationTest {
             ))
             .header(HttpHeaders.AUTHORIZATION, "Bearer " + adminToken)
             .exchange()
-            .expectStatus().is5xxServerError();
+            .expectStatus().isNotFound();
     }
 
     @Test
@@ -220,7 +241,8 @@ public class ParticipantIntegrationTest {
             .exchange()
             .expectStatus().isOk()
             .expectBody()
-            .jsonPath("$.active").isEqualTo(false);
+            .jsonPath("$.active").isEqualTo(false)
+            .jsonPath("$.updatedAt").exists();
     }
 
     @Test
@@ -234,17 +256,17 @@ public class ParticipantIntegrationTest {
     }
 
     @Test
-    @DisplayName("DELETE /participants/{id} returns server error when participant not found")
+    @DisplayName("DELETE /participants/{id} returns not found when participant not found")
     void deleteParticipant_shouldFail_whenMissing() {
         webTestClient.delete()
             .uri("/participants/{id}", 999999L)
             .header(HttpHeaders.AUTHORIZATION, "Bearer " + adminToken)
             .exchange()
-            .expectStatus().is5xxServerError();
+            .expectStatus().isNotFound();
     }
 
     @Test
-    @DisplayName("POST /participants returns server error for duplicate email")
+    @DisplayName("POST /participants returns bad request for duplicate email")
     void createParticipant_shouldFail_whenDuplicateEmail() {
         webTestClient.post()
             .uri("/participants")
@@ -259,11 +281,11 @@ public class ParticipantIntegrationTest {
             ))
             .header(HttpHeaders.AUTHORIZATION, "Bearer " + adminToken)
             .exchange()
-            .expectStatus().is5xxServerError();
+            .expectStatus().isBadRequest();
     }
 
     @Test
-    @DisplayName("POST /participants returns server error for invalid blank fields")
+    @DisplayName("POST /participants returns bad request for invalid blank fields")
     void createParticipant_shouldFail_whenBlankFieldsProvided() {
         webTestClient.post()
             .uri("/participants")
@@ -278,6 +300,25 @@ public class ParticipantIntegrationTest {
             ))
             .header(HttpHeaders.AUTHORIZATION, "Bearer " + adminToken)
             .exchange()
-            .expectStatus().is5xxServerError();
+            .expectStatus().isBadRequest();
+    }
+
+    @Test
+    @DisplayName("POST /participants returns bad request for invalid email format")
+    void createParticipant_shouldFail_whenInvalidEmailFormat() {
+        webTestClient.post()
+            .uri("/participants")
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(Map.of(
+                "firstName", "Invalid",
+                "lastName", "Email",
+                "email", "not-an-email",
+                "phone", "5550002222",
+                "role", "ATTENDEE",
+                "active", true
+            ))
+            .header(HttpHeaders.AUTHORIZATION, "Bearer " + adminToken)
+            .exchange()
+            .expectStatus().isBadRequest();
     }
 }

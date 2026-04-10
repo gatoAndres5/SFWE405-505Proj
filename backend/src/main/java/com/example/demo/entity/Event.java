@@ -73,13 +73,9 @@ public class Event {
 
     protected Event() {}
 
-<<<<<<< HEAD
-    public Event(String name, String description, LocalDateTime startDateTime, LocalDateTime endDateTime) {
-=======
-    public Event(){}
+    //public Event(){}
 
     public Event(String name, String description, LocalDateTime startDateTime, LocalDateTime endDateTime){
->>>>>>> origin/main
         this.name = name;
         this.description = description;
         this.startDateTime = startDateTime;
