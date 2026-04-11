@@ -96,6 +96,9 @@ export default function LoginPage({ onLoginSuccess }) {
           <p className="signup-text">
             Don&apos;t have an account? <Link to="/signup">Sign up</Link>
           </p>
+          <p className="signup-text">
+            <Link to="/forgot-password">Forgot password?</Link>
+          </p>
         </section>
       </div>
     </div>

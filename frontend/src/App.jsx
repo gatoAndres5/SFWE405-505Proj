@@ -11,6 +11,8 @@ import VendorsPage from "./pages/VendorsPage";
 import BookingsPage from "./pages/BookingsPage";
 import RegistrationsPage from "./pages/RegistrationsPage";
 import AdminManagementPage from "./pages/AdminManagementPage";
+import ForgotPasswordPage from "./pages/ForgotPasswordPage";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
 import "./App.css";
 
 function ProtectedRoute({ isAuthenticated, children }) {
@@ -129,6 +131,8 @@ export default function App() {
           </ProtectedRoute>
         }
       />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
     </Routes>
   );
 }
