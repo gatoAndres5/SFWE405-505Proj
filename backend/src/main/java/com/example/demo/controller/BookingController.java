@@ -22,8 +22,8 @@ public class BookingController {
     /**
      * Creates a new booking in the system.
      * 
-     * @param eventID ID of the event
-     * @param vendorID ID of the vendor
+     * @param eventId ID of the event
+     * @param vendorId ID of the vendor
      * @param serviceDescription description of the service
      * @param startDateTime booking start time
      * @param endDateTime booking end time
