@@ -1,176 +1,134 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { Navigate, Route, Routes } from "react-router-dom";
+import { useState } from "react";
+import AppLayout from "./components/layout/AppLayout";
+import LoginPage from "./pages/LoginPage";
+import SignupPage from "./pages/SignupPage";
+import Dashboard from "./pages/Dashboard";
+import EventsPage from "./pages/EventsPage";
+import VenuesPage from "./pages/VenuesPage";
+import ParticipantsPage from "./pages/ParticipantsPage";
+import VendorsPage from "./pages/VendorsPage";
+import BookingsPage from "./pages/BookingsPage";
+import RegistrationsPage from "./pages/RegistrationsPage";
+import AdminManagementPage from "./pages/AdminManagementPage";
+import "./App.css";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080"
+function ProtectedRoute({ isAuthenticated, children }) {
+  return isAuthenticated ? children : <Navigate to="/" replace />;
+}
 
-function App() {
-  const [count, setCount] = useState(0)
+export default function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState(
+    !!localStorage.getItem("token")
+  );
 
-  // login state
-  const [username, setUsername] = useState("")
-  const [password, setPassword] = useState("")
-  const [message, setMessage] = useState("")
-  const [loading, setLoading] = useState(false)
+  function handleLoginSuccess(token) {
+    localStorage.setItem("token", token);
+    setIsAuthenticated(true);
+  }
 
-  async function handleLogin(e) {
-    e.preventDefault()
-    setMessage("")
-    setLoading(true)
-
-    try {
-      const res = await fetch(`${API_BASE_URL}/auth/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ username, password }),
-      })
-
-      const data = await res.json().catch(() => null)
-
-      if (!res.ok) {
-        throw new Error(data?.message || "Login failed")
-      }
-
-      localStorage.setItem("token", data.token)
-      setMessage("Login successful")
-    } catch (err) {
-      if (err instanceof Error) {
-        setMessage(err.message)
-      } else {
-        setMessage("Something went wrong")
-      }
-    } finally {
-      setLoading(false)
-    }
+  function handleLogout() {
+    localStorage.removeItem("token");
+    setIsAuthenticated(false);
   }
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
+    <Routes>
+      <Route
+        path="/"
+        element={<LoginPage onLoginSuccess={handleLoginSuccess} />}
+      />
+      <Route path="/signup" element={<SignupPage />} />
 
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute isAuthenticated={isAuthenticated}>
+            <AppLayout onLogout={handleLogout}>
+              <Dashboard />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+      />
 
-        {/*LOGIN FORM */}
-        <form onSubmit={handleLogin} style={{ marginTop: "20px" }}>
-          <input
-            type="text"
-            placeholder="Username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            style={{ padding: "8px", marginRight: "8px" }}
-            required
-          />
+      <Route
+        path="/events"
+        element={
+          <ProtectedRoute isAuthenticated={isAuthenticated}>
+            <AppLayout onLogout={handleLogout}>
+              <EventsPage />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+      />
 
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            style={{ padding: "8px", marginRight: "8px" }}
-            required
-          />
+      <Route
+        path="/venues"
+        element={
+          <ProtectedRoute isAuthenticated={isAuthenticated}>
+            <AppLayout onLogout={handleLogout}>
+              <VenuesPage />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+      />
 
-          <button type="submit" disabled={loading}>
-            {loading ? "Logging in..." : "Login"}
-          </button>
-        </form>
+      <Route
+        path="/participants"
+        element={
+          <ProtectedRoute isAuthenticated={isAuthenticated}>
+            <AppLayout onLogout={handleLogout}>
+              <ParticipantsPage />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+      />
 
-        {message && <p style={{ marginTop: "10px" }}>{message}</p>}
+      <Route
+        path="/vendors"
+        element={
+          <ProtectedRoute isAuthenticated={isAuthenticated}>
+            <AppLayout onLogout={handleLogout}>
+              <VendorsPage />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+      />
 
-        <button
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+      <Route
+        path="/bookings"
+        element={
+          <ProtectedRoute isAuthenticated={isAuthenticated}>
+            <AppLayout onLogout={handleLogout}>
+              <BookingsPage />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+      />
 
-      <div className="ticks"></div>
+      <Route
+        path="/registrations"
+        element={
+          <ProtectedRoute isAuthenticated={isAuthenticated}>
+            <AppLayout onLogout={handleLogout}>
+              <RegistrationsPage />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+      />
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg className="button-icon">
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg className="button-icon">
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg className="button-icon">
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg className="button-icon">
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+      <Route path="*" element={<Navigate to="/" replace />} />
+      <Route path="/signup" element={<SignupPage />} />
+      <Route
+        path="/admin"
+        element={
+          <ProtectedRoute isAuthenticated={isAuthenticated}>
+            <AppLayout onLogout={handleLogout}>
+              <AdminManagementPage />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+      />
+    </Routes>
+  );
 }
-
-export default App

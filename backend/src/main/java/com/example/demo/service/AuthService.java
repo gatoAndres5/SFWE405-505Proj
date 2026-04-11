@@ -33,7 +33,7 @@ public class AuthService {
 
         if (!user.isEnabled()) {
             throw new ResponseStatusException(
-                    HttpStatus.FORBIDDEN, "User account is disabled"
+                    HttpStatus.FORBIDDEN, "User account is pending administrator approval"
             );
         }
 
@@ -46,7 +46,7 @@ public class AuthService {
         return jwtUtil.generateToken(user.getUsername(), user.getRole().name());
     }
 
-    public User register(String username, String email, String password, String role) {
+    public User signup(String username, String email, String password) {
 
         if (userRepository.findByUsername(username).isPresent()) {
             throw new ResponseStatusException(
@@ -60,23 +60,14 @@ public class AuthService {
             );
         }
 
-        UserRole userRole;
-        try {
-            userRole = UserRole.valueOf(role.toUpperCase());
-        } catch (IllegalArgumentException e) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST, "Invalid role"
-            );
-        }
-
         User user = new User(
                 username,
                 email,
                 passwordEncoder.encode(password),
-                userRole
+                UserRole.PARTICIPANT
         );
 
-        user.setEnabled(true);
+        user.setEnabled(false);
 
         return userRepository.save(user);
     }
