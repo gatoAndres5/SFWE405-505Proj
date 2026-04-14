@@ -8,10 +8,34 @@ const navItems = [
   { to: "/vendors", label: "Vendors" },
   { to: "/bookings", label: "Bookings" },
   { to: "/registrations", label: "Registrations" },
-  { to: "/admin", label: "Admin Management"}
+  { to: "/admin", label: "Admin Management" }
 ];
 
+function getUserFromToken() {
+  const token = localStorage.getItem("token");
+  if (!token) return null;
+
+  try {
+    return JSON.parse(atob(token.split(".")[1]));
+  } catch {
+    return null;
+  }
+}
+
 export default function Sidebar({ onLogout }) {
+  const user = getUserFromToken();
+
+  const username =
+    user?.username ||
+    user?.sub ||
+    user?.email ||
+    "User";
+
+  const role =
+    user?.role ||
+    user?.authorities ||
+    "";
+
   return (
     <aside className="sidebar">
       <div>
@@ -35,9 +59,17 @@ export default function Sidebar({ onLogout }) {
         </nav>
       </div>
 
-      <button className="logout-button" onClick={onLogout}>
-        Logout
-      </button>
+      <div className="sidebar-footer">
+        <div className="sidebar-user">
+          <span className="sidebar-user-label">Signed in as</span>
+          <strong className="sidebar-user-name">{username}</strong>
+          {role && <span className="sidebar-user-role">{role}</span>}
+        </div>
+
+        <button className="logout-button" onClick={onLogout}>
+          Logout
+        </button>
+      </div>
     </aside>
   );
 }

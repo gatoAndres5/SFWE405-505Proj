@@ -39,13 +39,15 @@ public class RegistrationController {
      * 
      * @param eventId the ID of the event
      * @param participantId the ID of the participant
+     * @param notes the notes of the registration and it is optional
      * @return the created Registration entity
      */
     @PreAuthorize("hasAnyRole('ADMIN','ORGANIZER','PARTICIPANT')")
     @PostMapping
     public Registration register(@RequestParam Long eventId,
-                                 @RequestParam Long participantId) {
-        return registrationService.register(eventId, participantId);
+                                 @RequestParam Long participantId,
+                                @RequestParam(required = false) String notes) {
+        return registrationService.register(eventId, participantId, notes);
     }
 
     /**

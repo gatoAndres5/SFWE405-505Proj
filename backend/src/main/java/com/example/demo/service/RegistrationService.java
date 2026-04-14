@@ -33,7 +33,7 @@ public class RegistrationService {
     }
 
     @Transactional
-    public Registration register(Long eventId, Long participantId) {
+    public Registration register(Long eventId, Long participantId, String notes) {
 
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new ResponseStatusException(
@@ -75,9 +75,9 @@ public class RegistrationService {
                 event,
                 participant,
                 new Date(),
-                RegistrationStatus.CONFIRMED,
+                RegistrationStatus.PENDING,
                 false,
-                null
+                notes
         );
 
         return registrationRepository.save(registration);
