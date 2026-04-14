@@ -9,6 +9,8 @@ export default function RegistrationsPage() {
   const [registrations, setRegistrations] = useState([]);
   const [events, setEvents] = useState([]);
   const [participants, setParticipants] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [previewUserEvents, setPreviewUserEvents] = useState([]);
 
   const [eventId, setEventId] = useState("");
   const [participantId, setParticipantId] = useState("");
@@ -17,6 +19,8 @@ export default function RegistrationsPage() {
 
   const [rolePreview, setRolePreview] = useState("");
   const [participantPreviewId, setParticipantPreviewId] = useState("");
+  const [organizerPreviewId, setOrganizerPreviewId] = useState("");
+  const [staffPreviewId, setStaffPreviewId] = useState("");
 
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -78,6 +82,17 @@ export default function RegistrationsPage() {
   const canCheckInOut = isAdmin || isStaff;
   const canDelete = isAdmin;
 
+  const organizers = users.filter((user) => user.role === "ORGANIZER");
+  const staffUsers = users.filter((user) => user.role === "STAFF");
+
+  function getOrganizerLabel(organizer) {
+    return `${organizer.id} - ${organizer.username}`;
+  }
+
+  function getStaffLabel(staff) {
+    return `${staff.id} - ${staff.username}`;
+  }
+
   async function apiRequest(url, options = {}) {
     const res = await fetch(url, {
       ...options,
@@ -115,6 +130,39 @@ export default function RegistrationsPage() {
     setParticipants(data || []);
   }
 
+  async function fetchUsers() {
+    try {
+      const res = await fetch(`${API_BASE}/users`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) throw new Error("Failed to fetch users");
+
+      const data = await res.json();
+      setUsers(data || []);
+    } catch (err) {
+      console.error(err);
+      setUsers([]);
+    }
+  }
+
+  async function fetchPreviewUserEvents(userId) {
+    if (!userId) {
+      setPreviewUserEvents([]);
+      return;
+    }
+
+    try {
+      const data = await apiRequest(`${API_BASE}/users/${userId}/events`);
+      setPreviewUserEvents(data || []);
+    } catch (err) {
+      console.error(err);
+      setPreviewUserEvents([]);
+    }
+  }
+
   async function loadPageData() {
     setLoading(true);
     setError("");
@@ -125,6 +173,7 @@ export default function RegistrationsPage() {
         fetchRegistrations(),
         fetchEvents(),
         fetchParticipants(),
+        ...(realIsAdmin ? [fetchUsers()] : []),
       ]);
     } catch (err) {
       setError(err.message || "Failed to load page data.");
@@ -149,7 +198,31 @@ export default function RegistrationsPage() {
     if (rolePreview !== "PARTICIPANT") {
       setParticipantPreviewId("");
     }
+
+    if (rolePreview !== "ORGANIZER") {
+      setOrganizerPreviewId("");
+    }
+
+    if (rolePreview !== "STAFF") {
+      setStaffPreviewId("");
+    }
   }, [rolePreview]);
+
+  useEffect(() => {
+    if (!realIsAdmin) return;
+
+    if (effectiveRole === "ORGANIZER" && organizerPreviewId) {
+      fetchPreviewUserEvents(organizerPreviewId);
+      return;
+    }
+
+    if (effectiveRole === "STAFF" && staffPreviewId) {
+      fetchPreviewUserEvents(staffPreviewId);
+      return;
+    }
+
+    setPreviewUserEvents([]);
+  }, [realIsAdmin, effectiveRole, organizerPreviewId, staffPreviewId]);
 
   function getEventLabel(event) {
     return `${event.id} - ${event.name ?? event.title ?? "Unnamed Event"}`;
@@ -181,9 +254,26 @@ export default function RegistrationsPage() {
     });
   }
 
+  const previewUserEventIds = useMemo(() => {
+    return previewUserEvents.map((event) => String(event.id));
+  }, [previewUserEvents]);
+
+  const visibleEvents = useMemo(() => {
+    if (
+      realIsAdmin &&
+      (effectiveRole === "ORGANIZER" || effectiveRole === "STAFF")
+    ) {
+      return events.filter((event) =>
+        previewUserEventIds.includes(String(event.id))
+      );
+    }
+
+    return events;
+  }, [events, realIsAdmin, effectiveRole, previewUserEventIds]);
+
   const selectedEvent = useMemo(() => {
-    return events.find((event) => String(event.id) === String(eventId));
-  }, [events, eventId]);
+    return visibleEvents.find((event) => String(event.id) === String(eventId));
+  }, [visibleEvents, eventId]);
 
   const selectedParticipant = useMemo(() => {
     const lookupId = canSelectParticipant ? participantId : effectiveParticipantId;
@@ -195,14 +285,32 @@ export default function RegistrationsPage() {
   }, [participants, participantId, effectiveParticipantId, canSelectParticipant]);
 
   const visibleRegistrations = useMemo(() => {
-    if (!isParticipant) return registrations;
+    if (isParticipant) {
+      return registrations.filter(
+        (registration) =>
+          String(registration.participant?.participantId) ===
+          String(effectiveParticipantId)
+      );
+    }
 
-    return registrations.filter(
-      (registration) =>
-        String(registration.participant?.participantId) ===
-        String(effectiveParticipantId)
-    );
-  }, [registrations, isParticipant, effectiveParticipantId]);
+    if (
+      realIsAdmin &&
+      (effectiveRole === "ORGANIZER" || effectiveRole === "STAFF")
+    ) {
+      return registrations.filter((registration) =>
+        previewUserEventIds.includes(String(registration.event?.id))
+      );
+    }
+
+    return registrations;
+  }, [
+    registrations,
+    isParticipant,
+    effectiveParticipantId,
+    realIsAdmin,
+    effectiveRole,
+    previewUserEventIds,
+  ]);
 
   async function handleCreateRegistration(e) {
     e.preventDefault();
@@ -366,6 +474,14 @@ export default function RegistrationsPage() {
         setParticipantPreviewId={setParticipantPreviewId}
         participants={participants}
         getParticipantLabel={getParticipantLabel}
+        organizerPreviewId={organizerPreviewId}
+        setOrganizerPreviewId={setOrganizerPreviewId}
+        organizers={organizers}
+        getOrganizerLabel={getOrganizerLabel}
+        staffPreviewId={staffPreviewId}
+        setStaffPreviewId={setStaffPreviewId}
+        staffUsers={staffUsers}
+        getStaffLabel={getStaffLabel}
       />
 
       {canCreate && (
@@ -378,7 +494,7 @@ export default function RegistrationsPage() {
           setNotes={setNotes}
           submitting={submitting}
           handleCreateRegistration={handleCreateRegistration}
-          events={events}
+          events={visibleEvents}
           participants={participants}
           selectedEvent={selectedEvent}
           selectedParticipant={selectedParticipant}

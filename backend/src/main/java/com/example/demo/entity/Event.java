@@ -71,9 +71,11 @@ public class Event {
     )
     private List<Venue> venues = new ArrayList<>();
 
+    @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<EventAssignment> eventAssignments = new ArrayList<>();
+
     protected Event() {}
 
-    //public Event(){}
 
     public Event(String name, String description, LocalDateTime startDateTime, LocalDateTime endDateTime){
         this.name = name;

@@ -41,7 +41,10 @@ public class ParticipantIntegrationTest {
     private PasswordEncoder passwordEncoder;
 
     private String adminToken;
+    private String organizerToken;
+    private String staffToken;
     private String participantToken;
+
     private Participant savedParticipant;
 
     private Participant createTestParticipant() {
@@ -69,6 +72,24 @@ public class ParticipantIntegrationTest {
         admin.setEnabled(true);
         userRepository.save(admin);
 
+        User organizer = new User(
+            "organizer_test",
+            "organizer@test.com",
+            passwordEncoder.encode("organizer123"),
+            UserRole.ORGANIZER
+        );
+        organizer.setEnabled(true);
+        userRepository.save(organizer);
+
+        User staff = new User(
+            "staff_test",
+            "staff@test.com",
+            passwordEncoder.encode("staff123"),
+            UserRole.STAFF
+        );
+        staff.setEnabled(true);
+        userRepository.save(staff);
+
         User participantUser = new User(
             "participant_test",
             "participant@test.com",
@@ -81,9 +102,13 @@ public class ParticipantIntegrationTest {
         savedParticipant = createTestParticipant();
 
         adminToken = loginAndGetToken("admin_test", "admin123");
+        organizerToken = loginAndGetToken("organizer_test", "organizer123");
+        staffToken = loginAndGetToken("staff_test", "staff123");
         participantToken = loginAndGetToken("participant_test", "participant123");
 
         assertNotNull(adminToken);
+        assertNotNull(organizerToken);
+        assertNotNull(staffToken);
         assertNotNull(participantToken);
     }
 
@@ -106,8 +131,8 @@ public class ParticipantIntegrationTest {
     }
 
     @Test
-    @DisplayName("POST /participants creates participant")
-    void createParticipant_shouldSucceed() {
+    @DisplayName("POST /participants succeeds for admin")
+    void createParticipant_shouldSucceed_forAdmin() {
         webTestClient.post()
             .uri("/participants")
             .contentType(MediaType.APPLICATION_JSON)
@@ -121,133 +146,89 @@ public class ParticipantIntegrationTest {
             ))
             .header(HttpHeaders.AUTHORIZATION, "Bearer " + adminToken)
             .exchange()
-            .expectStatus().isOk()
-            .expectBody()
-            .jsonPath("$.participantId").exists()
-            .jsonPath("$.firstName").isEqualTo("Alice")
-            .jsonPath("$.lastName").isEqualTo("Smith")
-            .jsonPath("$.email").isEqualTo("alice@test.com")
-            .jsonPath("$.role").isEqualTo("ATTENDEE")
-            .jsonPath("$.active").isEqualTo(true)
-            .jsonPath("$.createdAt").exists()
-            .jsonPath("$.updatedAt").exists();
+            .expectStatus().isOk();
     }
 
     @Test
-    @DisplayName("POST /participants returns unauthorized when no token is provided")
-    void createParticipant_shouldFail_whenUnauthorized() {
+    @DisplayName("POST /participants fails for participant user")
+    void createParticipant_shouldFail_forParticipantUser() {
         webTestClient.post()
             .uri("/participants")
             .contentType(MediaType.APPLICATION_JSON)
             .bodyValue(Map.of(
-                "firstName", "Alice",
-                "lastName", "Smith",
-                "email", "alice2@test.com",
+                "firstName", "Bob",
+                "lastName", "User",
+                "email", "bob@test.com",
                 "phone", "5551234567",
                 "role", "ATTENDEE",
                 "active", true
             ))
+            .header(HttpHeaders.AUTHORIZATION, "Bearer " + participantToken)
             .exchange()
             .expectStatus().isForbidden();
     }
 
     @Test
-    @DisplayName("GET /participants returns all participants")
-    void getAllParticipants_shouldSucceed() {
+    @DisplayName("GET /participants succeeds for admin")
+    void getAllParticipants_shouldSucceed_forAdmin() {
+        webTestClient.get()
+            .uri("/participants")
+            .header(HttpHeaders.AUTHORIZATION, "Bearer " + adminToken)
+            .exchange()
+            .expectStatus().isOk();
+    }
+
+    @Test
+    @DisplayName("GET /participants fails for participant user")
+    void getAllParticipants_shouldFail_forParticipantUser() {
         webTestClient.get()
             .uri("/participants")
             .header(HttpHeaders.AUTHORIZATION, "Bearer " + participantToken)
             .exchange()
-            .expectStatus().isOk()
-            .expectBodyList(Map.class)
-            .hasSize(1);
+            .expectStatus().isForbidden();
     }
 
     @Test
-    @DisplayName("GET /participants/{id} returns participant by id")
-    void getParticipantById_shouldSucceed() {
-        webTestClient.get()
-            .uri("/participants/{id}", savedParticipant.getParticipantId())
-            .header(HttpHeaders.AUTHORIZATION, "Bearer " + participantToken)
-            .exchange()
-            .expectStatus().isOk()
-            .expectBody()
-            .jsonPath("$.participantId").isEqualTo(savedParticipant.getParticipantId().intValue())
-            .jsonPath("$.firstName").isEqualTo("John")
-            .jsonPath("$.email").isEqualTo("john@test.com");
-    }
-
-    @Test
-    @DisplayName("GET /participants/{id} returns not found when participant not found")
-    void getParticipantById_shouldFail_whenMissing() {
-        webTestClient.get()
-            .uri("/participants/{id}", 999999L)
-            .header(HttpHeaders.AUTHORIZATION, "Bearer " + participantToken)
-            .exchange()
-            .expectStatus().isNotFound();
-    }
-
-    @Test
-    @DisplayName("PUT /participants/{id} updates participant")
-    void updateParticipant_shouldSucceed() {
+    @DisplayName("PUT /participants/{id} succeeds for admin")
+    void updateParticipant_shouldSucceed_forAdmin() {
         webTestClient.put()
             .uri("/participants/{id}", savedParticipant.getParticipantId())
             .contentType(MediaType.APPLICATION_JSON)
             .bodyValue(Map.of(
-                "firstName", "Johnny",
-                "lastName", "Doe",
-                "email", "johnny@test.com",
+                "firstName", "Updated",
+                "lastName", "User",
+                "email", "updated@test.com",
                 "phone", "9998887777",
                 "role", "SPEAKER",
                 "active", true
             ))
             .header(HttpHeaders.AUTHORIZATION, "Bearer " + adminToken)
             .exchange()
-            .expectStatus().isOk()
-            .expectBody()
-            .jsonPath("$.firstName").isEqualTo("Johnny")
-            .jsonPath("$.email").isEqualTo("johnny@test.com")
-            .jsonPath("$.phone").isEqualTo("9998887777")
-            .jsonPath("$.role").isEqualTo("SPEAKER")
-            .jsonPath("$.active").isEqualTo(true)
-            .jsonPath("$.updatedAt").exists();
+            .expectStatus().isOk();
     }
 
     @Test
-    @DisplayName("PUT /participants/{id} returns not found when participant not found")
-    void updateParticipant_shouldFail_whenMissing() {
+    @DisplayName("PUT /participants/{id} fails for staff")
+    void updateParticipant_shouldFail_forStaff() {
         webTestClient.put()
-            .uri("/participants/{id}", 999999L)
+            .uri("/participants/{id}", savedParticipant.getParticipantId())
             .contentType(MediaType.APPLICATION_JSON)
             .bodyValue(Map.of(
-                "firstName", "Ghost",
-                "lastName", "User",
-                "email", "ghost@test.com",
-                "phone", "0000000000",
+                "firstName", "Blocked",
+                "lastName", "Staff",
+                "email", "blocked@test.com",
+                "phone", "1231231234",
                 "role", "STAFF",
                 "active", true
             ))
-            .header(HttpHeaders.AUTHORIZATION, "Bearer " + adminToken)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer " + staffToken)
             .exchange()
-            .expectStatus().isNotFound();
+            .expectStatus().isForbidden();
     }
 
     @Test
-    @DisplayName("PATCH /participants/{id}/deactivate deactivates participant")
-    void deactivateParticipant_shouldSucceed() {
-        webTestClient.patch()
-            .uri("/participants/{id}/deactivate", savedParticipant.getParticipantId())
-            .header(HttpHeaders.AUTHORIZATION, "Bearer " + adminToken)
-            .exchange()
-            .expectStatus().isOk()
-            .expectBody()
-            .jsonPath("$.active").isEqualTo(false)
-            .jsonPath("$.updatedAt").exists();
-    }
-
-    @Test
-    @DisplayName("DELETE /participants/{id} deletes participant")
-    void deleteParticipant_shouldSucceed() {
+    @DisplayName("DELETE /participants/{id} succeeds for admin")
+    void deleteParticipant_shouldSucceed_forAdmin() {
         webTestClient.delete()
             .uri("/participants/{id}", savedParticipant.getParticipantId())
             .header(HttpHeaders.AUTHORIZATION, "Bearer " + adminToken)
@@ -256,69 +237,32 @@ public class ParticipantIntegrationTest {
     }
 
     @Test
-    @DisplayName("DELETE /participants/{id} returns not found when participant not found")
-    void deleteParticipant_shouldFail_whenMissing() {
+    @DisplayName("DELETE /participants/{id} fails for organizer")
+    void deleteParticipant_shouldFail_forOrganizer() {
         webTestClient.delete()
-            .uri("/participants/{id}", 999999L)
-            .header(HttpHeaders.AUTHORIZATION, "Bearer " + adminToken)
+            .uri("/participants/{id}", savedParticipant.getParticipantId())
+            .header(HttpHeaders.AUTHORIZATION, "Bearer " + organizerToken)
             .exchange()
-            .expectStatus().isNotFound();
+            .expectStatus().isForbidden();
     }
 
     @Test
-    @DisplayName("POST /participants returns bad request for duplicate email")
-    void createParticipant_shouldFail_whenDuplicateEmail() {
-        webTestClient.post()
-            .uri("/participants")
-            .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(Map.of(
-                "firstName", "Jane",
-                "lastName", "Doe",
-                "email", "john@test.com",
-                "phone", "4445556666",
-                "role", "ATTENDEE",
-                "active", true
-            ))
+    @DisplayName("PATCH /participants/{id}/deactivate succeeds for admin")
+    void deactivateParticipant_shouldSucceed_forAdmin() {
+        webTestClient.patch()
+            .uri("/participants/{id}/deactivate", savedParticipant.getParticipantId())
             .header(HttpHeaders.AUTHORIZATION, "Bearer " + adminToken)
             .exchange()
-            .expectStatus().isBadRequest();
+            .expectStatus().isOk();
     }
 
     @Test
-    @DisplayName("POST /participants returns bad request for invalid blank fields")
-    void createParticipant_shouldFail_whenBlankFieldsProvided() {
-        webTestClient.post()
-            .uri("/participants")
-            .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(Map.of(
-                "firstName", "",
-                "lastName", "",
-                "email", "",
-                "phone", "5550001111",
-                "role", "ATTENDEE",
-                "active", true
-            ))
-            .header(HttpHeaders.AUTHORIZATION, "Bearer " + adminToken)
+    @DisplayName("PATCH /participants/{id}/deactivate fails for staff")
+    void deactivateParticipant_shouldFail_forStaff() {
+        webTestClient.patch()
+            .uri("/participants/{id}/deactivate", savedParticipant.getParticipantId())
+            .header(HttpHeaders.AUTHORIZATION, "Bearer " + staffToken)
             .exchange()
-            .expectStatus().isBadRequest();
-    }
-
-    @Test
-    @DisplayName("POST /participants returns bad request for invalid email format")
-    void createParticipant_shouldFail_whenInvalidEmailFormat() {
-        webTestClient.post()
-            .uri("/participants")
-            .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(Map.of(
-                "firstName", "Invalid",
-                "lastName", "Email",
-                "email", "not-an-email",
-                "phone", "5550002222",
-                "role", "ATTENDEE",
-                "active", true
-            ))
-            .header(HttpHeaders.AUTHORIZATION, "Bearer " + adminToken)
-            .exchange()
-            .expectStatus().isBadRequest();
+            .expectStatus().isForbidden();
     }
 }

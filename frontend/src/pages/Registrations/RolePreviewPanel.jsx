@@ -6,6 +6,14 @@ export default function RolePreviewPanel({
   setParticipantPreviewId,
   participants,
   getParticipantLabel,
+  organizerPreviewId,
+  setOrganizerPreviewId,
+  organizers,
+  getOrganizerLabel,
+  staffPreviewId,
+  setStaffPreviewId,
+  staffUsers,
+  getStaffLabel,
 }) {
   if (!realIsAdmin) return null;
 
@@ -28,6 +36,44 @@ export default function RolePreviewPanel({
           <option value="PARTICIPANT">PARTICIPANT</option>
         </select>
       </div>
+
+      {rolePreview === "ORGANIZER" && (
+        <div style={{ marginBottom: "0.75rem" }}>
+          <label htmlFor="organizerPreview">Organizer Preview</label>
+          <br />
+          <select
+            id="organizerPreview"
+            value={organizerPreviewId}
+            onChange={(e) => setOrganizerPreviewId(e.target.value)}
+          >
+            <option value="">Select organizer to preview</option>
+            {organizers.map((organizer) => (
+              <option key={organizer.id} value={organizer.id}>
+                {getOrganizerLabel(organizer)}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+
+      {rolePreview === "STAFF" && (
+        <div style={{ marginBottom: "0.75rem" }}>
+          <label htmlFor="staffPreview">Staff Preview</label>
+          <br />
+          <select
+            id="staffPreview"
+            value={staffPreviewId}
+            onChange={(e) => setStaffPreviewId(e.target.value)}
+          >
+            <option value="">Select staff user to preview</option>
+            {staffUsers.map((staff) => (
+              <option key={staff.id} value={staff.id}>
+                {getStaffLabel(staff)}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
 
       {rolePreview === "PARTICIPANT" && (
         <div style={{ marginBottom: "0.75rem" }}>

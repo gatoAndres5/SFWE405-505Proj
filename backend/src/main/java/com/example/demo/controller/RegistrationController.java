@@ -51,11 +51,16 @@ public class RegistrationController {
     }
 
     /**
-     * Retrieves all registrations in the system.
-     * 
+     * Retrieves registrations visible to the authenticated user.
+     *
+     * Behavior depends on the user's role:
+     * - ADMIN: returns all registrations in the system
+     * - ORGANIZER: returns registrations for events assigned to the organizer
+     * - STAFF: returns registrations for events assigned to the staff member
+     *
      * Accessible by ADMIN, ORGANIZER, and STAFF roles.
-     * 
-     * @return list of all registrations
+     *
+     * @return list of registrations visible to the current user
      */
     @PreAuthorize("hasAnyRole('ADMIN','ORGANIZER','STAFF')")
     @GetMapping
