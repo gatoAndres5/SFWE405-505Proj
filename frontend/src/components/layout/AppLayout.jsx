@@ -20,6 +20,8 @@ export default function AppLayout({ children, onLogout }) {
         return "Bookings";
       case "/registrations":
         return "Registrations";
+      case "/scheduleItems":
+        return "Schedule Items";
       case "/admin":
         return "Admin Management";
       default:
