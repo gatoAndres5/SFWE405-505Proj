@@ -6,6 +6,8 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -16,9 +18,15 @@ import com.example.demo.entity.Registration;
 import com.example.demo.entity.ScheduleItem;
 import com.example.demo.entity.Vendor;
 import com.example.demo.entity.Venue;
+import com.example.demo.entity.User;
+import com.example.demo.entity.UserRole;
+import com.example.demo.entity.EventAssignment.EventAssignmentRole;
+import com.example.demo.entity.EventAssignment;
 import com.example.demo.repository.EventRepository;
 import com.example.demo.repository.ScheduleItemRepository;
 import com.example.demo.repository.VenueRepository;
+import com.example.demo.repository.UserRepository;
+import com.example.demo.repository.EventAssignmentRepository;
 
 @Service
 @Transactional
@@ -27,15 +35,21 @@ public class EventService {
     private final EventRepository eventRepository;
     private final VenueRepository venueRepository;
     private final ScheduleItemRepository scheduleItemRepository;
+    private final EventAssignmentRepository eventAssignmentRepository;
+    private final UserRepository userRepository;
 
     public EventService(
         EventRepository eventRepository,
         VenueRepository venueRepository,
-        ScheduleItemRepository scheduleItemRepository
+        ScheduleItemRepository scheduleItemRepository,
+        UserRepository userRepository,
+        EventAssignmentRepository eventAssignmentRepository
     ) {
         this.eventRepository = eventRepository;
         this.venueRepository = venueRepository;
         this.scheduleItemRepository = scheduleItemRepository;
+        this.userRepository = userRepository;
+        this.eventAssignmentRepository = eventAssignmentRepository;
     }
 
     public Event getEventById(Long eventId) {
@@ -64,7 +78,27 @@ public class EventService {
         event.setCreationTime(LocalDateTime.now());
         event.setUpdateTime(LocalDateTime.now());
 
-        return eventRepository.save(event);
+        Event savedEvent = eventRepository.save(event);
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+
+        User currentUser = userRepository.findByUsername(username)
+            .orElseThrow(() -> new ResponseStatusException(
+                HttpStatus.NOT_FOUND,
+                "Authenticated user not found: " + username
+            ));
+
+        if (currentUser.getRole() == UserRole.ORGANIZER) {
+            EventAssignment assignment = new EventAssignment(
+                savedEvent,
+                currentUser,
+                EventAssignmentRole.ORGANIZER
+            );
+            eventAssignmentRepository.save(assignment);
+        }
+
+        return savedEvent;
     }
 
     public Event updateEventDetails(

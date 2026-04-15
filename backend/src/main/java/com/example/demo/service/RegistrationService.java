@@ -13,6 +13,17 @@ import com.example.demo.entity.RegistrationStatus;
 import com.example.demo.repository.EventRepository;
 import com.example.demo.repository.ParticipantRepository;
 import com.example.demo.repository.RegistrationRepository;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+
+import com.example.demo.entity.EventAssignment;
+import com.example.demo.entity.Participant;
+import com.example.demo.entity.Registration;
+import com.example.demo.entity.RegistrationStatus;
+import com.example.demo.entity.User;
+import com.example.demo.entity.UserRole;
+import com.example.demo.repository.EventAssignmentRepository;
+import com.example.demo.repository.UserRepository;
 
 import java.util.Date;
 import java.util.List;
@@ -23,13 +34,19 @@ public class RegistrationService {
     private final RegistrationRepository registrationRepository;
     private final EventRepository eventRepository;
     private final ParticipantRepository participantRepository;
+    private final UserRepository userRepository;
+    private final EventAssignmentRepository eventAssignmentRepository;
 
     public RegistrationService(RegistrationRepository registrationRepository,
-                               EventRepository eventRepository,
-                               ParticipantRepository participantRepository) {
+                           EventRepository eventRepository,
+                           ParticipantRepository participantRepository,
+                           UserRepository userRepository,
+                           EventAssignmentRepository eventAssignmentRepository) {
         this.registrationRepository = registrationRepository;
         this.eventRepository = eventRepository;
         this.participantRepository = participantRepository;
+        this.userRepository = userRepository;
+        this.eventAssignmentRepository = eventAssignmentRepository;
     }
 
     @Transactional
@@ -85,8 +102,38 @@ public class RegistrationService {
 
     @Transactional(readOnly = true)
     public List<Registration> getAllRegistrations() {
-        return registrationRepository.findAll();
-    }
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+
+        User currentUser = userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResponseStatusException(
+                HttpStatus.NOT_FOUND,
+                "Authenticated user not found: " + username
+                ));
+
+        // ADMIN → sees everything
+        if (currentUser.getRole() == UserRole.ADMIN) {
+                return registrationRepository.findAll();
+        }
+
+        // ORGANIZER or STAFF → see registrations for assigned events
+        if (currentUser.getRole() == UserRole.ORGANIZER ||
+                currentUser.getRole() == UserRole.STAFF) {
+
+                List<EventAssignment> assignments =
+                eventAssignmentRepository.findByUser_Id(currentUser.getId());
+
+                List<Long> eventIds = assignments.stream()
+                .filter(a -> a.isActive())
+                .map(a -> a.getEvent().getId())
+                .toList();
+
+                return registrationRepository.findByEvent_IdIn(eventIds);
+        }
+
+        return List.of();
+     }
 
     @Transactional(readOnly = true)
     public Registration getRegistrationById(Long id) {

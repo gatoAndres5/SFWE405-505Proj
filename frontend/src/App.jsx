@@ -10,9 +10,10 @@ import ParticipantsPage from "./pages/Participants/ParticipantsPage";
 import VendorsPage from "./pages/Vendors/VendorsPage";
 import BookingsPage from "./pages/Bookings/BookingsPage";
 import RegistrationsPage from "./pages/Registrations/RegistrationsPage";
-import AdminManagementPage from "./pages/AdminManagementPage";
+import AdminManagementPage from "./pages/AdminManagement/AdminManagementPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
+import ScheduleItemsPage from "./pages/ScheduleItems/ScheduleItemsPage";
 import "./App.css";
 
 function ProtectedRoute({ isAuthenticated, children }) {
@@ -70,6 +71,16 @@ export default function App() {
           <ProtectedRoute isAuthenticated={isAuthenticated}>
             <AppLayout onLogout={handleLogout}>
               <VenuesPage />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/scheduleItems"
+        element={
+          <ProtectedRoute isAuthenticated={isAuthenticated}>
+            <AppLayout onLogout={handleLogout}>
+              <ScheduleItemsPage />
             </AppLayout>
           </ProtectedRoute>
         }

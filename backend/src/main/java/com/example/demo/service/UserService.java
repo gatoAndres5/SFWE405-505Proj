@@ -3,13 +3,18 @@ package com.example.demo.service;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.example.demo.entity.Event;
+import com.example.demo.entity.EventAssignment;
 import com.example.demo.entity.User;
 import com.example.demo.entity.UserRole;
+import com.example.demo.repository.EventAssignmentRepository;
 import com.example.demo.repository.UserRepository;
 
 @Service
@@ -17,10 +22,14 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final EventAssignmentRepository eventAssignmentRepository;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository,
+                   PasswordEncoder passwordEncoder,
+                   EventAssignmentRepository eventAssignmentRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.eventAssignmentRepository = eventAssignmentRepository;
     }
 
     @Transactional
@@ -121,5 +130,43 @@ public class UserService {
 
         user.setEnabled(false);
         return userRepository.save(user);
+    }
+    public List<Event> getAssignedEvents(Long id) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+
+        User currentUser = userRepository.findByUsername(username)
+            .orElseThrow(() -> new ResponseStatusException(
+                HttpStatus.NOT_FOUND,
+                "Authenticated user not found: " + username
+            ));
+
+        if (currentUser.getRole() == UserRole.ADMIN) {
+            return eventAssignmentRepository.findByUser_Id(id).stream()
+                .filter(EventAssignment::isActive)
+                .map(EventAssignment::getEvent)
+                .toList();
+        }
+
+        if (currentUser.getRole() == UserRole.ORGANIZER ||
+            currentUser.getRole() == UserRole.STAFF) {
+
+            if (!currentUser.getId().equals(id)) {
+                throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "You may only view your own assigned events."
+                );
+            }
+
+            return eventAssignmentRepository.findByUser_Id(currentUser.getId()).stream()
+                .filter(EventAssignment::isActive)
+                .map(EventAssignment::getEvent)
+                .toList();
+        }
+
+        throw new ResponseStatusException(
+            HttpStatus.FORBIDDEN,
+            "You are not allowed to view assigned events."
+        );
     }
 }
