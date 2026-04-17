@@ -21,6 +21,8 @@ export default function RegistrationsPage() {
   const [participantPreviewId, setParticipantPreviewId] = useState("");
   const [organizerPreviewId, setOrganizerPreviewId] = useState("");
   const [staffPreviewId, setStaffPreviewId] = useState("");
+  const [registrationFilter, setRegistrationFilter] = useState("");
+  const [registrationSearch, setRegistrationSearch] = useState("");
 
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -259,50 +261,123 @@ export default function RegistrationsPage() {
   }, [previewUserEvents]);
 
   const visibleEvents = useMemo(() => {
-    if (
-      realIsAdmin &&
-      (effectiveRole === "ORGANIZER" || effectiveRole === "STAFF")
-    ) {
-      return events.filter((event) =>
-        previewUserEventIds.includes(String(event.id))
-      );
-    }
+    return events.filter((event) => {
+      const isActive = event.status === "ACTIVE";
 
-    return events;
-  }, [events, realIsAdmin, effectiveRole, previewUserEventIds]);
+      if (!isActive) return false;
+
+      if (
+        realIsAdmin &&
+        (effectiveRole === "ORGANIZER" || effectiveRole === "STAFF")
+      ) {
+        return previewUserEventIds.includes(String(event.id));
+      }
+
+      if (isOrganizer || isStaff) {
+        return previewUserEventIds.includes(String(event.id));
+      }
+
+      if (isAdmin) return true;
+
+      if (isParticipant) return true;
+
+      return false;
+    });
+  }, [
+    events,
+    realIsAdmin,
+    effectiveRole,
+    previewUserEventIds,
+    isAdmin,
+    isOrganizer,
+    isStaff,
+    isParticipant,
+  ]);
 
   const selectedEvent = useMemo(() => {
     return visibleEvents.find((event) => String(event.id) === String(eventId));
   }, [visibleEvents, eventId]);
 
+  const visibleParticipants = useMemo(() => {
+    return participants.filter((participant) => participant.active === true);
+  }, [participants]);
+
   const selectedParticipant = useMemo(() => {
     const lookupId = canSelectParticipant ? participantId : effectiveParticipantId;
 
-    return participants.find(
+    return visibleParticipants.find(
       (participant) =>
         String(participant.participantId) === String(lookupId)
     );
-  }, [participants, participantId, effectiveParticipantId, canSelectParticipant]);
+  }, [
+    visibleParticipants,
+    participantId,
+    effectiveParticipantId,
+    canSelectParticipant,
+  ]);
 
   const visibleRegistrations = useMemo(() => {
+    let filtered = registrations;
+
     if (isParticipant) {
-      return registrations.filter(
+      filtered = filtered.filter(
         (registration) =>
           String(registration.participant?.participantId) ===
           String(effectiveParticipantId)
       );
-    }
-
-    if (
+    } else if (
       realIsAdmin &&
       (effectiveRole === "ORGANIZER" || effectiveRole === "STAFF")
     ) {
-      return registrations.filter((registration) =>
+      filtered = filtered.filter((registration) =>
         previewUserEventIds.includes(String(registration.event?.id))
       );
     }
 
-    return registrations;
+    if (registrationFilter) {
+      filtered = filtered.filter(
+        (registration) => registration.registrationStatus === registrationFilter
+      );
+    }
+
+    if (registrationSearch.trim()) {
+      const query = registrationSearch.trim().toLowerCase();
+
+      filtered = filtered.filter((registration) => {
+        const registrationId = String(registration.id ?? "").toLowerCase();
+        const status = String(registration.status ?? "").toLowerCase();
+        const notes = String(registration.notes ?? "").toLowerCase();
+
+        const eventName = String(
+          registration.event?.name ??
+          registration.event?.title ??
+          ""
+        ).toLowerCase();
+
+        const participantName = [
+          registration.participant?.firstName ?? "",
+          registration.participant?.lastName ?? "",
+        ]
+          .join(" ")
+          .trim()
+          .toLowerCase();
+
+        const participantId = String(
+          registration.participant?.participantId ?? ""
+        ).toLowerCase();
+
+        return (
+          registrationId.includes(query) ||
+          status.includes(query) ||
+          notes.includes(query) ||
+          eventName.includes(query) ||
+          participantName.includes(query) ||
+          participantId.includes(query)
+        );
+      });
+    }
+
+    return filtered;
   }, [
     registrations,
     isParticipant,
@@ -310,6 +385,8 @@ export default function RegistrationsPage() {
     realIsAdmin,
     effectiveRole,
     previewUserEventIds,
+    registrationFilter,
+    registrationSearch,
   ]);
 
   async function handleCreateRegistration(e) {
@@ -495,7 +572,7 @@ export default function RegistrationsPage() {
           submitting={submitting}
           handleCreateRegistration={handleCreateRegistration}
           events={visibleEvents}
-          participants={participants}
+          participants={visibleParticipants}
           selectedEvent={selectedEvent}
           selectedParticipant={selectedParticipant}
           getEventLabel={getEventLabel}
@@ -508,6 +585,35 @@ export default function RegistrationsPage() {
       )}
 
       <h3>Existing Registrations</h3>
+
+      <div style={{ marginBottom: "1rem" }}>
+        <label htmlFor="registrationSearch">Search registrations</label>
+          <br />
+          <input
+            id="registrationSearch"
+            type="text"
+            value={registrationSearch}
+            onChange={(e) => setRegistrationSearch(e.target.value)}
+            placeholder="Search by ID, event, participant, status, or notes"
+            style={{ width: "260px", marginBottom: "0.5rem" }}
+          />
+          <br />
+
+          <label htmlFor="registrationFilter">Filter by status</label>
+          <br />
+          <select
+            id="registrationFilter"
+            value={registrationFilter}
+            onChange={(e) => setRegistrationFilter(e.target.value)}
+          >
+            <option value="">All statuses</option>
+            {statusOptions.map((status) => (
+              <option key={status} value={status}>
+                {status}
+              </option>
+            ))}
+          </select>
+        </div>
 
       {loading ? (
         <p>Loading registrations...</p>
