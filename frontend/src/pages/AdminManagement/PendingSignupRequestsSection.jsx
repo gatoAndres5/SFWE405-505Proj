@@ -1,17 +1,20 @@
+import "./AdminManagement.css";
 export default function PendingSignupRequestsSection({
   loading,
   pendingUsers,
   onApprove,
 }) {
   return (
-    <div className="content-card">
-      <h2>Pending Signup Requests</h2>
-      <p>Review and approve new account requests.</p>
+    <section className="admin-section">
+      <h2 className="admin-section-title">Pending Signup Requests</h2>
+      <p className="admin-section-subtitle">
+        Review and approve new account requests.
+      </p>
 
       {loading ? (
-        <p>Loading...</p>
+        <p className="admin-muted">Loading...</p>
       ) : (
-        <div className="table-wrapper">
+        <div className="admin-table-wrapper">
           <table className="admin-table">
             <thead>
               <tr>
@@ -21,24 +24,41 @@ export default function PendingSignupRequestsSection({
                 <th>Actions</th>
               </tr>
             </thead>
+
             <tbody>
               {pendingUsers.length === 0 ? (
                 <tr>
-                  <td colSpan="4">No pending users</td>
+                  <td colSpan="4" className="admin-empty">
+                    No pending users
+                  </td>
                 </tr>
               ) : (
                 pendingUsers.map((user) => (
                   <tr key={user.id}>
                     <td>{user.username}</td>
+
                     <td>{user.email}</td>
-                    <td>{user.enabled ? "Yes" : "No"}</td>
+
                     <td>
-                      <button
-                        className="table-action-btn"
-                        onClick={() => onApprove(user.id)}
+                      <span
+                        className={`admin-badge ${
+                          user.enabled ? "enabled" : "disabled"
+                        }`}
                       >
-                        Approve
-                      </button>
+                        {user.enabled ? "Enabled" : "Disabled"}
+                      </span>
+                    </td>
+
+                    <td>
+                      <div className="admin-inline-actions">
+                        <button
+                          className="admin-btn admin-btn-success"
+                          type="button"
+                          onClick={() => onApprove(user.id)}
+                        >
+                          Approve
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -47,6 +67,6 @@ export default function PendingSignupRequestsSection({
           </table>
         </div>
       )}
-    </div>
+    </section>
   );
 }

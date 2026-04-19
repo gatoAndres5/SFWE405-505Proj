@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import RolePreviewPanel from "./RolePreviewPanel";
 import RegistrationForm from "./RegistrationForm";
 import RegistrationTable from "./RegistrationTable";
+import "./Registrations.css";
 
 const API_BASE = "http://localhost:8080";
 
@@ -537,71 +538,76 @@ export default function RegistrationsPage() {
   }
 
   return (
-    <div className="content-card">
-      <h2>Registrations</h2>
+    <div className="reg-page">
 
-      {message && <p style={{ color: "green" }}>{message}</p>}
-      {error && <p style={{ color: "red" }}>{error}</p>}
+      {message && <div className="reg-message success">{message}</div>}
+      {error && <div className="reg-message error">{error}</div>}
 
-      <RolePreviewPanel
-        realIsAdmin={realIsAdmin}
-        rolePreview={rolePreview}
-        setRolePreview={setRolePreview}
-        participantPreviewId={participantPreviewId}
-        setParticipantPreviewId={setParticipantPreviewId}
-        participants={participants}
-        getParticipantLabel={getParticipantLabel}
-        organizerPreviewId={organizerPreviewId}
-        setOrganizerPreviewId={setOrganizerPreviewId}
-        organizers={organizers}
-        getOrganizerLabel={getOrganizerLabel}
-        staffPreviewId={staffPreviewId}
-        setStaffPreviewId={setStaffPreviewId}
-        staffUsers={staffUsers}
-        getStaffLabel={getStaffLabel}
-      />
+      <section className="reg-section">
+        <h3 className="reg-section-title">Preview Page As</h3>
+          <RolePreviewPanel
+            realIsAdmin={realIsAdmin}
+            rolePreview={rolePreview}
+            setRolePreview={setRolePreview}
+            participantPreviewId={participantPreviewId}
+            setParticipantPreviewId={setParticipantPreviewId}
+            participants={participants}
+            getParticipantLabel={getParticipantLabel}
+            organizerPreviewId={organizerPreviewId}
+            setOrganizerPreviewId={setOrganizerPreviewId}
+            organizers={organizers}
+            getOrganizerLabel={getOrganizerLabel}
+            staffPreviewId={staffPreviewId}
+            setStaffPreviewId={setStaffPreviewId}
+            staffUsers={staffUsers}
+            getStaffLabel={getStaffLabel}
+          />
+      </section>
 
       {canCreate && (
-        <RegistrationForm
-          eventId={eventId}
-          setEventId={setEventId}
-          participantId={participantId}
-          setParticipantId={setParticipantId}
-          notes={notes}
-          setNotes={setNotes}
-          submitting={submitting}
-          handleCreateRegistration={handleCreateRegistration}
-          events={visibleEvents}
-          participants={visibleParticipants}
-          selectedEvent={selectedEvent}
-          selectedParticipant={selectedParticipant}
-          getEventLabel={getEventLabel}
-          getParticipantLabel={getParticipantLabel}
-          formatDateTime={formatDateTime}
-          effectiveParticipantId={effectiveParticipantId}
-          canSelectParticipant={canSelectParticipant}
-          isParticipant={isParticipant}
-        />
+        <section className="reg-section">
+          <h3 className="reg-section-title">Create Registration</h3>
+          <RegistrationForm
+            eventId={eventId}
+            setEventId={setEventId}
+            participantId={participantId}
+            setParticipantId={setParticipantId}
+            notes={notes}
+            setNotes={setNotes}
+            submitting={submitting}
+            handleCreateRegistration={handleCreateRegistration}
+            events={visibleEvents}
+            participants={visibleParticipants}
+            selectedEvent={selectedEvent}
+            selectedParticipant={selectedParticipant}
+            getEventLabel={getEventLabel}
+            getParticipantLabel={getParticipantLabel}
+            formatDateTime={formatDateTime}
+            effectiveParticipantId={effectiveParticipantId}
+            canSelectParticipant={canSelectParticipant}
+            isParticipant={isParticipant}
+          />
+        </section>
       )}
 
-      <h3>Existing Registrations</h3>
+      <section className="reg-section">
+      <h3 className="reg-section-title">Existing Registrations</h3>
 
-      <div style={{ marginBottom: "1rem" }}>
-        <label htmlFor="registrationSearch">Search registrations</label>
-          <br />
+      <div className="reg-filter-bar">
+        <label className="reg-label">Search registrations</label>
           <input
+            className="reg-input"
             id="registrationSearch"
             type="text"
             value={registrationSearch}
             onChange={(e) => setRegistrationSearch(e.target.value)}
             placeholder="Search by ID, event, participant, status, or notes"
-            style={{ width: "260px", marginBottom: "0.5rem" }}
           />
-          <br />
+          
 
-          <label htmlFor="registrationFilter">Filter by status</label>
-          <br />
+          <label className="reg-label">Filter by status</label>
           <select
+            className="reg-select"
             id="registrationFilter"
             value={registrationFilter}
             onChange={(e) => setRegistrationFilter(e.target.value)}
@@ -616,9 +622,9 @@ export default function RegistrationsPage() {
         </div>
 
       {loading ? (
-        <p>Loading registrations...</p>
+        <p className="reg-muted">Loading registrations...</p>
       ) : visibleRegistrations.length === 0 ? (
-        <p>No registrations found.</p>
+        <p className="reg-table-empty">No registrations found.</p>
       ) : (
         <RegistrationTable
           registrations={visibleRegistrations}
@@ -639,6 +645,7 @@ export default function RegistrationsPage() {
           statusOptions={statusOptions}
         />
       )}
+      </section>
     </div>
   );
 }

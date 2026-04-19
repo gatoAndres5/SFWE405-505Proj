@@ -1,21 +1,33 @@
+import "./Registrations.css";
 export default function ParticipantSummaryCard({ participant }) {
   if (!participant) return null;
 
+  const fullName = `${participant.firstName ?? ""} ${participant.lastName ?? ""}`.trim();
+
   return (
-    <div
-      style={{
-        marginBottom: "1rem",
-        padding: "0.75rem",
-        border: "1px solid rgba(255,255,255,0.15)",
-        borderRadius: "8px",
-      }}
-    >
-      <strong>
-        {participant.firstName ?? ""} {participant.lastName ?? ""}
-      </strong>
-      <div>{participant.email ?? "No email available"}</div>
-      <div>Role: {participant.role ?? "N/A"}</div>
-      <div>Active: {participant.active ? "Yes" : "No"}</div>
+    <div className="reg-summary-card">
+      <h4>{fullName || "Unnamed Participant"}</h4>
+
+      <p>
+        <span className="reg-muted">Email:</span>{" "}
+        {participant.email ?? "No email available"}
+      </p>
+
+      <p>
+        <span className="reg-muted">Role:</span>{" "}
+        {participant.role ?? "N/A"}
+      </p>
+
+      <p>
+        <span className="reg-muted">Status:</span>{" "}
+        <span
+          className={`reg-badge ${
+            participant.active ? "confirmed" : "cancelled"
+          }`}
+        >
+          {participant.active ? "Active" : "Inactive"}
+        </span>
+      </p>
     </div>
   );
 }
