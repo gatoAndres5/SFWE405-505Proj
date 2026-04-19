@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import "./AdminManagement.css";
 import CreateApprovedUserSection from "./CreateApprovedUserSection";
 import PendingSignupRequestsSection from "./PendingSignupRequestsSection";
 import ExistingUsersSection from "./ExistingUsersSection";
@@ -11,6 +12,7 @@ export default function AdminManagementPage() {
   const [pendingUsers, setPendingUsers] = useState([]);
   const [approvedUsers, setApprovedUsers] = useState([]);
   const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
 
   const [createUserForm, setCreateUserForm] = useState({
@@ -26,6 +28,7 @@ export default function AdminManagementPage() {
     try {
       setLoading(true);
       setMessage("");
+      setError("");
 
       const [pendingRes, allRes] = await Promise.all([
         fetch(`${API_BASE_URL}/users/pending`, {
@@ -45,7 +48,7 @@ export default function AdminManagementPage() {
       setPendingUsers(pendingData);
       setApprovedUsers(allData);
     } catch (err) {
-      setMessage(err instanceof Error ? err.message : "Error loading users");
+      setError(err instanceof Error ? err.message : "Error loading users");
     } finally {
       setLoading(false);
     }
@@ -57,6 +60,9 @@ export default function AdminManagementPage() {
 
   async function handleApprove(userId) {
     try {
+      setMessage("");
+      setError("");
+
       const res = await fetch(`${API_BASE_URL}/users/${userId}/approve`, {
         method: "PATCH",
         headers: { Authorization: `Bearer ${token}` },
@@ -64,15 +70,18 @@ export default function AdminManagementPage() {
 
       if (!res.ok) throw new Error("Failed to approve user");
 
-      setMessage("User approved");
+      setMessage("User approved.");
       fetchUsers();
     } catch (err) {
-      setMessage(err instanceof Error ? err.message : "Error approving user");
+      setError(err instanceof Error ? err.message : "Error approving user");
     }
   }
 
   async function handleRoleChange(userId, role) {
     try {
+      setMessage("");
+      setError("");
+
       const res = await fetch(`${API_BASE_URL}/users/${userId}/role`, {
         method: "PATCH",
         headers: {
@@ -84,10 +93,10 @@ export default function AdminManagementPage() {
 
       if (!res.ok) throw new Error("Failed to change role");
 
-      setMessage("Role updated");
+      setMessage("Role updated.");
       fetchUsers();
     } catch (err) {
-      setMessage(err instanceof Error ? err.message : "Error updating role");
+      setError(err instanceof Error ? err.message : "Error updating role");
     }
   }
 
@@ -96,6 +105,7 @@ export default function AdminManagementPage() {
 
     try {
       setMessage("");
+      setError("");
 
       const res = await fetch(`${API_BASE_URL}/users`, {
         method: "POST",
@@ -112,7 +122,7 @@ export default function AdminManagementPage() {
         throw new Error(data?.message || "Failed to create user");
       }
 
-      setMessage("Approved user created successfully");
+      setMessage("Approved user created successfully.");
       setCreateUserForm({
         username: "",
         email: "",
@@ -121,7 +131,7 @@ export default function AdminManagementPage() {
       });
       fetchUsers();
     } catch (err) {
-      setMessage(err instanceof Error ? err.message : "Error creating user");
+      setError(err instanceof Error ? err.message : "Error creating user");
     }
   }
 
@@ -133,8 +143,10 @@ export default function AdminManagementPage() {
   }
 
   return (
-    <div className="admin-management-page">
-      {message && <p className="form-message">{message}</p>}
+    <div className="admin-page">
+
+      {message && <div className="admin-message success">{message}</div>}
+      {error && <div className="admin-message error">{error}</div>}
 
       <CreateApprovedUserSection
         createUserForm={createUserForm}

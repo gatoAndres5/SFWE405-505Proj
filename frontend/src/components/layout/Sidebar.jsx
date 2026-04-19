@@ -1,17 +1,5 @@
 import { NavLink } from "react-router-dom";
 
-const navItems = [
-  { to: "/dashboard", label: "Dashboard" },
-  { to: "/events", label: "Events" },
-  { to: "/venues", label: "Venues" },
-  { to: "/scheduleItems", label: "Schedule Items"},
-  { to: "/participants", label: "Participants" },
-  { to: "/vendors", label: "Vendors" },
-  { to: "/bookings", label: "Bookings" },
-  { to: "/registrations", label: "Registrations" },
-  { to: "/admin", label: "Admin Management" }
-];
-
 function getUserFromToken() {
   const token = localStorage.getItem("token");
   if (!token) return null;
@@ -26,6 +14,18 @@ function getUserFromToken() {
 export default function Sidebar({ onLogout }) {
   const user = getUserFromToken();
 
+  const navItems = [
+    { to: "/dashboard", label: "Dashboard" },
+    { to: "/events", label: "Events" },
+    { to: "/venues", label: "Venues" },
+    { to: "/scheduleItems", label: "Schedule Items" },
+    { to: "/participants", label: "Participants" },
+    { to: "/vendors", label: "Vendors" },
+    { to: "/bookings", label: "Bookings" },
+    { to: "/registrations", label: "Registrations" },
+    { to: "/admin", label: "Admin Management" }
+  ];
+
   const username =
     user?.username ||
     user?.sub ||
@@ -37,6 +37,14 @@ export default function Sidebar({ onLogout }) {
     user?.authorities ||
     "";
 
+  // filter nav items based on role
+  const filteredNavItems = navItems.filter((item) => {
+    if (item.to === "/admin") {
+      return role === "ADMIN" || role.includes("ADMIN");
+    }
+    return true;
+  });
+
   return (
     <aside className="sidebar">
       <div>
@@ -46,7 +54,7 @@ export default function Sidebar({ onLogout }) {
         </div>
 
         <nav className="sidebar-nav">
-          {navItems.map((item) => (
+          {filteredNavItems.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}

@@ -1,3 +1,4 @@
+import "./Registrations.css";
 export default function RegistrationTable({
   registrations,
   canUpdateStatus,
@@ -16,89 +17,120 @@ export default function RegistrationTable({
   formatDateTime,
   statusOptions,
 }) {
+  function getStatusBadgeClass(status) {
+    switch (status) {
+      case "PENDING":
+        return "pending";
+      case "INVITED":
+        return "pending";
+      case "CONFIRMED":
+        return "confirmed";
+      case "WAITLISTED":
+        return "warning";
+      case "CANCELLED":
+        return "cancelled";
+      default:
+        return "";
+    }
+  }
+
   return (
-    <div style={{ overflowX: "auto" }}>
-      <table style={{ width: "100%", borderCollapse: "collapse" }}>
+    <div className="reg-table-wrapper">
+      <table className="reg-table">
         <thead>
           <tr>
-            <th style={{ textAlign: "left", padding: "0.5rem" }}>ID</th>
-            <th style={{ textAlign: "left", padding: "0.5rem" }}>Event ID</th>
-            <th style={{ textAlign: "left", padding: "0.5rem" }}>Event Name</th>
-            <th style={{ textAlign: "left", padding: "0.5rem" }}>Participant ID</th>
-            <th style={{ textAlign: "left", padding: "0.5rem" }}>Participant Name</th>
-            <th style={{ textAlign: "left", padding: "0.5rem" }}>Status</th>
-            <th style={{ textAlign: "left", padding: "0.5rem" }}>Check-In</th>
-            <th style={{ textAlign: "left", padding: "0.5rem" }}>Registered At</th>
-            <th style={{ textAlign: "left", padding: "0.5rem" }}>Notes</th>
-            {canUpdateStatus && (
-              <th style={{ textAlign: "left", padding: "0.5rem" }}>Update Status</th>
-            )}
-            {(canCancel || canCheckInOut || canDelete) && (
-              <th style={{ textAlign: "left", padding: "0.5rem" }}>Actions</th>
-            )}
+            <th>ID</th>
+            <th>Event ID</th>
+            <th>Event Name</th>
+            <th>Participant ID</th>
+            <th>Participant Name</th>
+            <th>Status</th>
+            <th>Check-In</th>
+            <th>Registered At</th>
+            <th>Notes</th>
+            {canUpdateStatus && <th>Update Status</th>}
+            {(canCancel || canCheckInOut || canDelete) && <th>Actions</th>}
           </tr>
         </thead>
+
         <tbody>
           {registrations.map((registration) => (
             <tr key={registration.id}>
-              <td style={{ padding: "0.5rem" }}>{registration.id ?? "N/A"}</td>
-              <td style={{ padding: "0.5rem" }}>
-                {registration.event?.id ?? "N/A"}
+              <td>{registration.id ?? "N/A"}</td>
+
+              <td>{registration.event?.id ?? "N/A"}</td>
+
+              <td>{getEventName(registration.event)}</td>
+
+              <td>{registration.participant?.participantId ?? "N/A"}</td>
+
+              <td>{getParticipantName(registration.participant)}</td>
+
+              <td>
+                <span
+                  className={`reg-badge ${getStatusBadgeClass(
+                    registration.registrationStatus
+                  )}`}
+                >
+                  {registration.registrationStatus ?? "N/A"}
+                </span>
               </td>
-              <td style={{ padding: "0.5rem" }}>
-                {getEventName(registration.event)}
+
+              <td>
+                <span
+                  className={`reg-checkin ${
+                    registration.checkInStatus
+                      ? "checked-in"
+                      : "not-checked-in"
+                  }`}
+                >
+                  {registration.checkInStatus ? "Checked In" : "Not Checked In"}
+                </span>
               </td>
-              <td style={{ padding: "0.5rem" }}>
-                {registration.participant?.participantId ?? "N/A"}
-              </td>
-              <td style={{ padding: "0.5rem" }}>
-                {getParticipantName(registration.participant)}
-              </td>
-              <td style={{ padding: "0.5rem" }}>
-                {registration.registrationStatus ?? "N/A"}
-              </td>
-              <td style={{ padding: "0.5rem" }}>
-                {registration.checkInStatus ? "Checked In" : "Not Checked In"}
-              </td>
-              <td style={{ padding: "0.5rem" }}>
+
+              <td>
                 {registration.registeredAt
                   ? formatDateTime(registration.registeredAt)
                   : "N/A"}
               </td>
-              <td style={{ padding: "0.5rem" }}>
-                {registration.notes || "—"}
-              </td>
+
+              <td>{registration.notes || "—"}</td>
 
               {canUpdateStatus && (
-                <td style={{ padding: "0.5rem" }}>
-                  <select
-                    value={selectedStatus[registration.id] || ""}
-                    onChange={(e) =>
-                      handleStatusChange(registration.id, e.target.value)
-                    }
-                  >
-                    <option value="">Select status</option>
-                    {statusOptions.map((status) => (
-                      <option key={status} value={status}>
-                        {status}
-                      </option>
-                    ))}
-                  </select>
-                  <button
-                    type="button"
-                    style={{ marginLeft: "0.5rem" }}
-                    onClick={() => handleUpdateStatus(registration.id)}
-                  >
-                    Update
-                  </button>
+                <td>
+                  <div className="reg-inline-update">
+                    <select
+                      className="reg-select"
+                      value={selectedStatus[registration.id] || ""}
+                      onChange={(e) =>
+                        handleStatusChange(registration.id, e.target.value)
+                      }
+                    >
+                      <option value="">Select status</option>
+                      {statusOptions.map((status) => (
+                        <option key={status} value={status}>
+                          {status}
+                        </option>
+                      ))}
+                    </select>
+
+                    <button
+                      className="reg-btn reg-btn-secondary"
+                      type="button"
+                      onClick={() => handleUpdateStatus(registration.id)}
+                    >
+                      Update
+                    </button>
+                  </div>
                 </td>
               )}
 
               {(canCancel || canCheckInOut || canDelete) && (
-                <td style={{ padding: "0.5rem" }}>
-                  <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+                <td className="reg-actions-cell">
+                  <div className="reg-actions-stack">
                     {canCancel && (
                       <button
+                        className="reg-btn reg-btn-warning"
                         type="button"
                         onClick={() => handleCancelRegistration(registration.id)}
                       >
@@ -109,12 +141,15 @@ export default function RegistrationTable({
                     {canCheckInOut && (
                       <>
                         <button
+                          className="reg-btn reg-btn-success"
                           type="button"
                           onClick={() => handleCheckIn(registration.id)}
                         >
                           Check In
                         </button>
+
                         <button
+                          className="reg-btn reg-btn-outline"
                           type="button"
                           onClick={() => handleCheckOut(registration.id)}
                         >
@@ -125,6 +160,7 @@ export default function RegistrationTable({
 
                     {canDelete && (
                       <button
+                        className="reg-btn reg-btn-danger"
                         type="button"
                         onClick={() => handleDeleteRegistration(registration.id)}
                       >
