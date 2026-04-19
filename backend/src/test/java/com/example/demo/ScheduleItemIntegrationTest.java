@@ -1,7 +1,5 @@
 package com.example.demo;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-
 import java.time.LocalDateTime;
 import java.util.Map;
 
@@ -51,7 +49,6 @@ public class ScheduleItemIntegrationTest {
     private String participantToken;
     private Event savedEvent;
     private Venue savedVenue;
-    private ScheduleItem savedScheduleItem;
 
     private ScheduleItem createTestScheduleItem() {
         ScheduleItem item = new ScheduleItem(
