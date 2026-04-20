@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import "./ScheduleItems.css";
 import ScheduleItemForm from "./ScheduleItemForm";
 import ScheduleItemsTable from "./ScheduleItemsTable";
+import ScheduleCalendarView from "./ScheduleCalendarView";
 
 const API = "http://localhost:8080";
 
@@ -47,6 +48,7 @@ export default function ScheduleItemsPage() {
   const [form, setForm] = useState(emptyForm);
   const [events, setEvents] = useState([]);
   const [venues, setVenues] = useState([]);
+  const [viewMode, setViewMode] = useState("table");
 
   const token = localStorage.getItem("token");
   const role = getRoleFromToken(token);
@@ -191,13 +193,25 @@ export default function ScheduleItemsPage() {
       {message && <div className="schedule-message success">{message}</div>}
       {error && <div className="schedule-message error">{error}</div>}
 
-      {!showForm && canEdit && (
-        <div style={{ marginBottom: "1.25rem" }}>
+      <div style={{ display: "flex", gap: "0.75rem", marginBottom: "1.25rem", flexWrap: "wrap" }}>
+        {!showForm && canEdit && (
           <button className="schedule-btn schedule-btn-success" onClick={openCreateForm}>
             + Add Schedule Item
           </button>
-        </div>
-      )}
+        )}
+        <button
+          className={`schedule-btn ${viewMode === "table" ? "schedule-btn-primary" : "schedule-btn-secondary"}`}
+          onClick={() => setViewMode("table")}
+        >
+          Table View
+        </button>
+        <button
+          className={`schedule-btn ${viewMode === "calendar" ? "schedule-btn-primary" : "schedule-btn-secondary"}`}
+          onClick={() => setViewMode("calendar")}
+        >
+          Calendar View
+        </button>
+      </div>
 
       {showForm && (
         <ScheduleItemForm
@@ -211,13 +225,17 @@ export default function ScheduleItemsPage() {
         />
       )}
 
-      <ScheduleItemsTable
-        loading={loading}
-        items={items}
-        onEdit={startEditing}
-        onDelete={handleDelete}
-        canEdit={canEdit}
-      />
+      {viewMode === "table" ? (
+        <ScheduleItemsTable
+          loading={loading}
+          items={items}
+          onEdit={startEditing}
+          onDelete={handleDelete}
+          canEdit={canEdit}
+        />
+      ) : (
+        <ScheduleCalendarView items={items} />
+      )}
     </div>
   );
 }
