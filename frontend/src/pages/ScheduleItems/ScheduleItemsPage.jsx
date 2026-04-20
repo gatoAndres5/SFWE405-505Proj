@@ -5,6 +5,16 @@ import ScheduleItemsTable from "./ScheduleItemsTable";
 
 const API = "http://localhost:8080";
 
+// Decodes the role claim from the JWT payload without a library
+function getRoleFromToken(token) {
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    return payload.role || "";
+  } catch {
+    return "";
+  }
+}
+
 const emptyForm = {
   eventId: "",
   venueId: "",
@@ -37,6 +47,8 @@ export default function ScheduleItemsPage() {
   const [form, setForm] = useState(emptyForm);
 
   const token = localStorage.getItem("token");
+  const role = getRoleFromToken(token);
+  const canEdit = role === "ROLE_ADMIN" || role === "ROLE_ORGANIZER" || role === "ADMIN" || role === "ORGANIZER";
 
   useEffect(() => {
     fetchItems();
@@ -46,7 +58,7 @@ export default function ScheduleItemsPage() {
     try {
       setLoading(true);
       setError("");
-      const res = await fetch(`${API}/scheduleItems`, {
+      const res = await fetch(`${API}/scheduleItems/my`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!res.ok) throw new Error("Failed to load schedule items");
@@ -153,7 +165,7 @@ export default function ScheduleItemsPage() {
       {message && <div className="schedule-message success">{message}</div>}
       {error && <div className="schedule-message error">{error}</div>}
 
-      {!showForm && (
+      {!showForm && canEdit && (
         <div style={{ marginBottom: "1.25rem" }}>
           <button className="schedule-btn schedule-btn-success" onClick={openCreateForm}>
             + Add Schedule Item
@@ -176,6 +188,7 @@ export default function ScheduleItemsPage() {
         items={items}
         onEdit={startEditing}
         onDelete={handleDelete}
+        canEdit={canEdit}
       />
     </div>
   );

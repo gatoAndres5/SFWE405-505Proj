@@ -5,7 +5,7 @@ function formatDateTime(dt) {
   return new Date(dt).toLocaleString();
 }
 
-export default function ScheduleItemsTable({ loading, items, onEdit, onDelete }) {
+export default function ScheduleItemsTable({ loading, items, onEdit, onDelete, canEdit }) {
   return (
     <section className="schedule-section">
       <h2 className="schedule-section-title">All Schedule Items</h2>
@@ -49,20 +49,24 @@ export default function ScheduleItemsTable({ loading, items, onEdit, onDelete })
                     <td>{formatDateTime(item.startDateTime)}</td>
                     <td>{formatDateTime(item.endDateTime)}</td>
                     <td>
-                      <div className="schedule-inline-actions">
-                        <button
-                          className="schedule-btn schedule-btn-primary"
-                          onClick={() => onEdit(item)}
-                        >
-                          Edit
-                        </button>
-                        <button
-                          className="schedule-btn schedule-btn-danger"
-                          onClick={() => onDelete(item.id)}
-                        >
-                          Delete
-                        </button>
-                      </div>
+                      {canEdit ? (
+                        <div className="schedule-inline-actions">
+                          <button
+                            className="schedule-btn schedule-btn-primary"
+                            onClick={() => onEdit(item)}
+                          >
+                            Edit
+                          </button>
+                          <button
+                            className="schedule-btn schedule-btn-danger"
+                            onClick={() => onDelete(item.id)}
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      ) : (
+                        <span className="schedule-empty">View only</span>
+                      )}
                     </td>
                   </tr>
                 ))
