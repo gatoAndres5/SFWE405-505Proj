@@ -45,6 +45,8 @@ export default function ScheduleItemsPage() {
   const [showForm, setShowForm] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const [form, setForm] = useState(emptyForm);
+  const [events, setEvents] = useState([]);
+  const [venues, setVenues] = useState([]);
 
   const token = localStorage.getItem("token");
   const role = getRoleFromToken(token);
@@ -52,6 +54,8 @@ export default function ScheduleItemsPage() {
 
   useEffect(() => {
     fetchItems();
+    fetchEvents();
+    fetchVenues();
   }, []);
 
   async function fetchItems() {
@@ -68,6 +72,28 @@ export default function ScheduleItemsPage() {
       setError(err.message);
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function fetchEvents() {
+    try {
+      const res = await fetch(`${API}/events`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) setEvents(await res.json());
+    } catch {
+      // non-blocking — form still works if this fails
+    }
+  }
+
+  async function fetchVenues() {
+    try {
+      const res = await fetch(`${API}/venues`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) setVenues(await res.json());
+    } catch {
+      // non-blocking — form still works if this fails
     }
   }
 
@@ -180,6 +206,8 @@ export default function ScheduleItemsPage() {
           onSubmit={handleSubmit}
           onCancel={handleCancel}
           isEditing={!!editingItem}
+          events={events}
+          venues={venues}
         />
       )}
 

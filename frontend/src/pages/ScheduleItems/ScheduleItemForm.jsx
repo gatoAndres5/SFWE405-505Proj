@@ -2,7 +2,15 @@ import "./ScheduleItems.css";
 
 const TYPE_OPTIONS = ["Workshop", "Keynote", "Panel", "Break", "Networking", "Other"];
 
-export default function ScheduleItemForm({ form, onFieldChange, onSubmit, onCancel, isEditing }) {
+function formatDateTime(dt) {
+  if (!dt) return "—";
+  return new Date(dt).toLocaleString();
+}
+
+export default function ScheduleItemForm({ form, onFieldChange, onSubmit, onCancel, isEditing, events = [], venues = [] }) {
+  const selectedEvent = events.find((e) => String(e.id) === String(form.eventId));
+  const selectedVenue = venues.find((v) => String(v.id) === String(form.venueId));
+
   return (
     <section className="schedule-section">
       <h2 className="schedule-section-title">
@@ -18,27 +26,55 @@ export default function ScheduleItemForm({ form, onFieldChange, onSubmit, onCanc
         <div className="schedule-form-grid">
 
           <div className="schedule-form-group">
-            <label className="schedule-label">Event ID</label>
-            <input
-              className="schedule-input"
-              type="number"
-              placeholder="e.g. 1"
+            <label className="schedule-label">Event</label>
+            <select
+              className="schedule-select"
               value={form.eventId}
               onChange={(e) => onFieldChange("eventId", e.target.value)}
               required
-            />
+            >
+              <option value="">Select an event...</option>
+              {events.map((event) => (
+                <option key={event.id} value={event.id}>
+                  {event.id} - {event.name}
+                </option>
+              ))}
+            </select>
+            {selectedEvent && (
+              <div className="schedule-preview">
+                <strong>{selectedEvent.name}</strong>
+                <span>Time: {formatDateTime(selectedEvent.startDateTime)} → {formatDateTime(selectedEvent.endDateTime)}</span>
+                <span>Status: <strong>{selectedEvent.status}</strong></span>
+                {selectedEvent.description && <span>{selectedEvent.description}</span>}
+              </div>
+            )}
           </div>
 
           <div className="schedule-form-group">
-            <label className="schedule-label">Venue ID</label>
-            <input
-              className="schedule-input"
-              type="number"
-              placeholder="e.g. 1"
+            <label className="schedule-label">Venue</label>
+            <select
+              className="schedule-select"
               value={form.venueId}
               onChange={(e) => onFieldChange("venueId", e.target.value)}
               required
-            />
+            >
+              <option value="">Select a venue...</option>
+              {venues.map((venue) => (
+                <option key={venue.id} value={venue.id}>
+                  {venue.id} - {venue.name}
+                </option>
+              ))}
+            </select>
+            {selectedVenue && (
+              <div className="schedule-preview">
+                <strong>{selectedVenue.name}</strong>
+                {selectedVenue.address && (
+                  <span>{selectedVenue.address.street}, {selectedVenue.address.city}, {selectedVenue.address.state}</span>
+                )}
+                <span>Capacity: {selectedVenue.capacity}</span>
+                <span>Contact: {selectedVenue.contactName} — {selectedVenue.contactEmail}</span>
+              </div>
+            )}
           </div>
 
           <div className="schedule-form-group">
