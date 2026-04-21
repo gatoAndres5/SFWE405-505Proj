@@ -21,20 +21,22 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // login identifier
     @Column(nullable = false, length = 60)
     private String username;
 
     @Column(nullable = false, length = 160)
     private String email;
 
-    // store a BCrypt hash, NOT the raw password
     @JsonIgnore
     @Column(nullable = false, length = 100)
     private String passwordHash;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<EventAssignment> eventAssignments = new ArrayList<>();
+
+    @OneToOne
+    @JoinColumn(name = "participant_id")
+    private Participant participant;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
@@ -70,7 +72,6 @@ public class User {
         updatedAt = Instant.now();
     }
 
-    // getters/setters 
     public Long getId() { return id; }
     public String getUsername() { return username; }
     public void setUsername(String username) { this.username = username; }
@@ -84,4 +85,7 @@ public class User {
     public void setEnabled(boolean enabled) { this.enabled = enabled; }
     public Instant getCreatedAt() { return createdAt; }
     public Instant getUpdatedAt() { return updatedAt; }
+
+    public Participant getParticipant() { return participant; }
+    public void setParticipant(Participant participant) { this.participant = participant; }
 }

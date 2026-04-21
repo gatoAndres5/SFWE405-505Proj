@@ -13,6 +13,8 @@ public class Booking {
     private String serviceDescription;
     private LocalDateTime startDateTime;
     private LocalDateTime endDateTime;
+    
+    @Enumerated(EnumType.STRING)
     private BookingStatus bookingStatus;
 
     @ManyToOne

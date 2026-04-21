@@ -40,6 +40,7 @@ public class UserController {
         public String email;
         public String password;
         public UserRole role;
+        public Long participantId;
     }
 
     /**
@@ -47,7 +48,7 @@ public class UserController {
      *
      * Allowed Roles: ADMIN
      *
-     * @param request contains username, email, password, and role
+     * @param request contains username, email, password, role, and optional participantId
      * @return the created User
      */
     @PreAuthorize("hasRole('ADMIN')")
@@ -57,7 +58,8 @@ public class UserController {
                 request.username,
                 request.email,
                 request.password,
-                request.role
+                request.role,
+                request.participantId
         );
     }
 
