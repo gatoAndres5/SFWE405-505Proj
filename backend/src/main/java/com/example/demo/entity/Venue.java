@@ -1,6 +1,7 @@
 package com.example.demo.entity;
 
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -33,7 +34,9 @@ public class Venue {
     private List<ScheduleItem> scheduleItems = new ArrayList<>();
 
     private String name;
-    private String address;
+
+    @Embedded
+    private Address address;
     private int capacity;
     private String contactName;
     private String contactEmail;
@@ -47,7 +50,7 @@ public class Venue {
         this.updatedAt = LocalDateTime.now();
     }
     
-    public Venue(String name, String address, int capacity, 
+    public Venue(String name, Address address, int capacity, 
         String contactName, String contactEmail, String contactPhone) {
             this.name = name;
             this.address = address;
@@ -74,7 +77,7 @@ public class Venue {
     public String getName() {
         return name;
     }
-    public String getAddress(){
+    public Address getAddress(){
         return address;
     }
     public int getCapacity(){
@@ -111,7 +114,7 @@ public class Venue {
     public void setName(String name){
         this.name = name;
     }
-    public void setAddress(String address){
+    public void setAddress(Address address){
         this.address = address;
     }
     public void setCapacity(int capacity){

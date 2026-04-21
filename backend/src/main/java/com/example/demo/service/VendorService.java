@@ -4,7 +4,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.example.demo.entity.Booking;
 import com.example.demo.entity.Vendor;
@@ -28,7 +30,12 @@ public class VendorService {
             isBlank(vendor.getContactName()) ||
             isBlank(vendor.getContactEmail()) ||
             isBlank(vendor.getContactPhone()) ||
-            isBlank(vendor.getAddress())) {
+            vendor.getAddress() == null ||
+            isBlank(vendor.getAddress().getStreet()) ||
+            isBlank(vendor.getAddress().getCity()) ||
+            isBlank(vendor.getAddress().getState()) ||
+            isBlank(vendor.getAddress().getZipCode()) ||
+            isBlank(vendor.getAddress().getCountry())) {
             throw new IllegalArgumentException("Missing required vendor fields.");
         }
 
@@ -36,8 +43,9 @@ public class VendorService {
             throw new IllegalArgumentException("Invalid email format.");
         }
 
+        // duplicate email now returns 409 instead of 400
         if (vendorRepository.existsByContactEmail(vendor.getContactEmail())) {
-            throw new IllegalArgumentException("Vendor already exists.");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Vendor already exists.");
         }
 
         vendor.setActive(true);
@@ -67,7 +75,12 @@ public class VendorService {
             isBlank(updatedVendor.getContactName()) ||
             isBlank(updatedVendor.getContactEmail()) ||
             isBlank(updatedVendor.getContactPhone()) ||
-            isBlank(updatedVendor.getAddress())) {
+            updatedVendor.getAddress() == null ||
+            isBlank(updatedVendor.getAddress().getStreet()) ||
+            isBlank(updatedVendor.getAddress().getCity()) ||
+            isBlank(updatedVendor.getAddress().getState()) ||
+            isBlank(updatedVendor.getAddress().getZipCode()) ||
+            isBlank(updatedVendor.getAddress().getCountry())) {
             throw new IllegalArgumentException("Missing required vendor fields.");
         }
 
@@ -75,9 +88,10 @@ public class VendorService {
             throw new IllegalArgumentException("Invalid email format.");
         }
 
+        // duplicate email on update now returns 409
         if (!vendor.getContactEmail().equals(updatedVendor.getContactEmail()) &&
             vendorRepository.existsByContactEmail(updatedVendor.getContactEmail())) {
-            throw new IllegalArgumentException("Vendor already exists.");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Vendor already exists.");
         }
 
         vendor.setName(updatedVendor.getName());

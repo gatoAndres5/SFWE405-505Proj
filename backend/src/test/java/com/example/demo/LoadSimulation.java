@@ -30,19 +30,28 @@ public class LoadSimulation extends Simulation {
                 .check(jsonPath("$.token").saveAs("jwt"))
         ).exitHereIfFailed();
 
-    ChainBuilder register =
+    ChainBuilder getParticipants =
         exec(
-            http("register")
-                .post("/registrations?eventId=1&participantId=1")
+            http("get all participants")
+                .get("/participants")
                 .header("Authorization", "Bearer #{jwt}")
-                .check(status().in(200, 201, 403, 404, 409))
+                .check(status().is(200))
         );
 
-    ScenarioBuilder scn = scenario("registration flow")
+    ChainBuilder createDuplicateRegistration =
+        exec(
+            http("create registration")
+                .post("/registrations?eventId=1&participantId=1")
+                .header("Authorization", "Bearer #{jwt}")
+                .check(status().in(200, 409))
+        );
+
+    ScenarioBuilder scn = scenario("authenticated registration flow")
         .exec(login)
         .pause(1)
-        .exec(register)
-        .pause(1);
+        .exec(getParticipants)
+        .pause(1)
+        .exec(createDuplicateRegistration);
 
     {
         setUp(
@@ -51,6 +60,10 @@ public class LoadSimulation extends Simulation {
                 constantUsersPerSec(2).during(20)
             )
         )
-        .protocols(httpProtocol);
+        .protocols(httpProtocol)
+        .assertions(
+            global().responseTime().max().lt(3000),
+            global().successfulRequests().percent().gt(95.0)
+        );
     }
 }

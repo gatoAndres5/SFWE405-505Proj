@@ -157,7 +157,7 @@ class RegistrationIntegrationTest {
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody()
-                .jsonPath("$.registrationStatus").isEqualTo("CONFIRMED")
+                .jsonPath("$.registrationStatus").isEqualTo("PENDING")
                 .jsonPath("$.checkInStatus").isEqualTo(false);
     }
 
@@ -262,7 +262,7 @@ class RegistrationIntegrationTest {
                 activeEvent,
                 activeParticipant,
                 new java.util.Date(),
-                com.example.demo.entity.RegistrationStatus.CONFIRMED,
+                com.example.demo.entity.RegistrationStatus.PENDING,
                 false,
                 "seeded registration"
         );

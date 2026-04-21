@@ -1,0 +1,402 @@
+.reg-page {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  color: #f8fafc;
+}
+
+.reg-page-title {
+  margin: 0 0 1.5rem;
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.reg-message {
+  margin-bottom: 1.25rem;
+  padding: 0.9rem 1rem;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+.reg-message.success {
+  background: rgba(34, 197, 94, 0.12);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  color: #4ade80;
+}
+
+.reg-message.error {
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #f87171;
+}
+
+.reg-section {
+  background: #0b1730;
+  border: 1px solid #1e293b;
+  border-radius: 16px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.22);
+}
+
+.reg-section-title {
+  margin: 0 0 1.25rem;
+  font-size: 1.6rem;
+  font-weight: 700;
+}
+
+.reg-subtitle {
+  margin: 0 0 0.75rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #cbd5e1;
+}
+
+.reg-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.reg-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+}
+
+.reg-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.reg-form-group.full-width {
+  grid-column: 1 / -1;
+}
+
+.reg-label {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #e2e8f0;
+}
+
+.reg-input,
+.reg-select,
+.reg-textarea {
+  width: 100%;
+  padding: 0.78rem 0.9rem;
+  border-radius: 10px;
+  border: 1px solid #334155;
+  background: #020617;
+  color: #f8fafc;
+  font-size: 0.95rem;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+  box-sizing: border-box;
+}
+
+.reg-input::placeholder,
+.reg-textarea::placeholder {
+  color: #94a3b8;
+}
+
+.reg-input:focus,
+.reg-select:focus,
+.reg-textarea:focus {
+  outline: none;
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.18);
+  background: #071224;
+}
+
+.reg-textarea {
+  min-height: 110px;
+  resize: vertical;
+}
+
+.reg-actions-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.reg-btn {
+  border: none;
+  border-radius: 10px;
+  padding: 0.72rem 1rem;
+  font-size: 0.92rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    transform 0.15s ease,
+    opacity 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.reg-btn:hover {
+  transform: translateY(-1px);
+  opacity: 0.96;
+}
+
+.reg-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+  transform: none;
+}
+
+.reg-btn-primary {
+  background: #2563eb;
+  color: white;
+}
+
+.reg-btn-secondary {
+  background: #64748b;
+  color: white;
+}
+
+.reg-btn-success {
+  background: #16a34a;
+  color: white;
+}
+
+.reg-btn-warning {
+  background: #d97706;
+  color: white;
+}
+
+.reg-btn-danger {
+  background: #dc2626;
+  color: white;
+}
+
+.reg-btn-outline {
+  background: transparent;
+  color: #e2e8f0;
+  border: 1px solid #475569;
+}
+
+.reg-preview-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: end;
+}
+
+.reg-preview-box {
+  min-width: 240px;
+}
+
+.reg-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.reg-summary-card {
+  background: #111c31;
+  border: 1px solid #22304a;
+  border-radius: 14px;
+  padding: 1rem;
+}
+
+.reg-summary-card h4 {
+  margin: 0 0 0.6rem;
+  font-size: 1rem;
+  color: #f8fafc;
+}
+
+.reg-summary-card p {
+  margin: 0.35rem 0;
+  color: #cbd5e1;
+  line-height: 1.4;
+}
+
+.reg-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  align-items: end;
+}
+
+.reg-filter-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  min-width: 220px;
+  flex: 1;
+}
+
+.reg-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  border-radius: 14px;
+  border: 1px solid #1e293b;
+  background: #081120;
+}
+
+.reg-table {
+  width: 100%;
+  min-width: 1150px;
+  border-collapse: collapse;
+}
+
+.reg-table thead {
+  background: #111c31;
+}
+
+.reg-table th,
+.reg-table td {
+  padding: 0.95rem 0.85rem;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid #1e293b;
+}
+
+.reg-table th {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #cbd5e1;
+  white-space: nowrap;
+}
+
+.reg-table td {
+  color: #f8fafc;
+  line-height: 1.45;
+}
+
+.reg-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.reg-table-empty {
+  padding: 1.5rem 1rem;
+  text-align: center;
+  color: #94a3b8;
+}
+
+.reg-actions-cell {
+  min-width: 220px;
+}
+
+.reg-actions-stack {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.reg-inline-update {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.reg-inline-update .reg-select {
+  min-width: 150px;
+  width: auto;
+}
+
+.reg-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.reg-badge.pending {
+  background: rgba(245, 158, 11, 0.16);
+  color: #fbbf24;
+}
+
+.reg-badge.confirmed {
+  background: rgba(34, 197, 94, 0.16);
+  color: #4ade80;
+}
+
+.reg-badge.cancelled {
+  background: rgba(239, 68, 68, 0.16);
+  color: #f87171;
+}
+
+.reg-badge.completed {
+  background: rgba(59, 130, 246, 0.16);
+  color: #60a5fa;
+}
+.reg-badge.warning {
+    background: rgba(245, 158, 11, 0.16);
+    color: #fbbf24;
+  }
+
+.reg-checkin {
+  font-weight: 600;
+}
+
+.reg-checkin.checked-in {
+  color: #4ade80;
+}
+
+.reg-checkin.not-checked-in {
+  color: #fbbf24;
+}
+
+.reg-muted {
+  color: #94a3b8;
+}
+
+.reg-small {
+  font-size: 0.88rem;
+}
+
+@media (max-width: 1280px) {
+  .reg-page {
+    max-width: 1400px;   /* increase width */
+    margin: 0 auto;
+    padding: 1.5rem 1rem;  /* reduce side padding */
+  }
+
+  .reg-section {
+    padding: 1rem;
+    background: #0b1730;
+  }
+
+  .reg-page-title {
+    font-size: 1.7rem;
+  }
+
+  .reg-section-title {
+    font-size: 1.35rem;
+  }
+
+  .reg-filter-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .reg-filter-item {
+    min-width: 100%;
+  }
+
+  .reg-actions-row,
+  .reg-actions-stack,
+  .reg-inline-update {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .reg-btn {
+    width: 100%;
+  }
+
+  .reg-inline-update .reg-select {
+    width: 100%;
+  }
+}

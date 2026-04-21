@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import java.time.LocalDateTime;
 import java.util.Map;
 
+import com.example.demo.entity.Address;
 import com.example.demo.entity.User;
 import com.example.demo.entity.UserRole;
 import com.example.demo.entity.Venue;
@@ -25,7 +26,7 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureWebTestClient
 @ActiveProfiles("test")
-public class VenueControllerTest {
+public class VenueIntegrationTest {
 
     @Autowired
     private WebTestClient webTestClient;
@@ -41,9 +42,16 @@ public class VenueControllerTest {
     private Venue savedVenue;
 
     private Venue createTestVenue() {
+        Address address = new Address(
+            "742 Evergreen Terrace",
+            "Springfield",
+            "IL",
+            "62704",
+            "USA"
+        );
         Venue venue = new Venue(
             "Test Venue",
-            "123 Test Street",
+            address,
             100,
             "John Manager",
             "555-1234",
@@ -107,7 +115,13 @@ public class VenueControllerTest {
             .contentType(MediaType.APPLICATION_JSON)
             .bodyValue(Map.of(
                 "name", "Grand Ballroom",
-                "address", "456 Event Ave",
+                "address", Map.of(
+                    "street", "742 Evergreen Terrace",
+                    "city", "Springfield",
+                    "state", "IL",
+                    "zipCode", "62704",
+                    "country", "USA"
+                ),
                 "capacity", 200,
                 "contactName", "Jane Manager",
                 "contactEmail", "jane@venue.com",
@@ -183,7 +197,13 @@ public class VenueControllerTest {
             .contentType(MediaType.APPLICATION_JSON)
             .bodyValue(Map.of(
                 "name", "Updated Venue Name",
-                "address", "789 New Street",
+                "address", Map.of(
+                    "street", "742 Evergreen Terrace",
+                    "city", "Springfield",
+                    "state", "IL",
+                    "zipCode", "62704",
+                    "country", "USA"
+                ),
                 "capacity", 150,
                 "contactName", "Updated Manager",
                 "contactEmail", "updated@venue.com",
@@ -306,7 +326,13 @@ public class VenueControllerTest {
             .contentType(MediaType.APPLICATION_JSON)
             .bodyValue(Map.of(
                 "name", "Unauthorized Venue",
-                "address", "123 Test St",
+                "address", Map.of(
+                    "street", "742 Evergreen Terrace",
+                    "city", "Springfield",
+                    "state", "IL",
+                    "zipCode", "62704",
+                    "country", "USA"
+                ),
                 "capacity", 50,
                 "contactName", "Test Manager",
                 "contactEmail", "test@test.com",
@@ -330,7 +356,13 @@ public class VenueControllerTest {
             .contentType(MediaType.APPLICATION_JSON)
             .bodyValue(Map.of(
                 "name", "",  // Empty name
-                "address", "123 Test St",
+                "address", Map.of(
+                    "street", "742 Evergreen Terrace",
+                    "city", "Springfield",
+                    "state", "IL",
+                    "zipCode", "62704",
+                    "country", "USA"
+                ),
                 "capacity", -10,  // Invalid capacity
                 "contactName", "Test Manager",
                 "contactEmail", "test@test.com",
@@ -354,7 +386,13 @@ public class VenueControllerTest {
             .contentType(MediaType.APPLICATION_JSON)
             .bodyValue(Map.of(
                 "name", "Updated Name",
-                "address", "Updated Address",
+                "address", Map.of(
+                    "street", "123 Updated Terrace",
+                    "city", "Springfield",
+                    "state", "IL",
+                    "zipCode", "62704",
+                    "country", "USA"
+                ),
                 "capacity", 100,
                 "contactName", "Updated Manager",
                 "contactEmail", "updated@test.com",

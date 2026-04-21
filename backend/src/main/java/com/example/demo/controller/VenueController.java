@@ -1,6 +1,7 @@
 package com.example.demo.controller;
 
 import com.example.demo.entity.Venue;
+import com.example.demo.entity.Address;
 import com.example.demo.entity.ScheduleItem;
 import com.example.demo.service.VenueService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -202,7 +203,7 @@ public class VenueController {
      */
     public static class CreateVenueRequest {
         private String name;
-        private String address;
+        private Address address;
         private int capacity;
         private String contactName;
         private String contactEmail;
@@ -210,7 +211,7 @@ public class VenueController {
 
         // Getters
         public String getName() { return name; }
-        public String getAddress() { return address; }
+        public Address getAddress() { return address; }
         public int getCapacity() { return capacity; }
         public String getContactName() { return contactName; }
         public String getContactEmail() { return contactEmail; }
@@ -218,7 +219,7 @@ public class VenueController {
 
         // Setters
         public void setName(String name) { this.name = name; }
-        public void setAddress(String address) { this.address = address; }
+        public void setAddress(Address address) { this.address = address; }
         public void setCapacity(int capacity) { this.capacity = capacity; }
         public void setContactName(String contactName) { this.contactName = contactName; }
         public void setContactEmail(String contactEmail) { this.contactEmail = contactEmail; }
@@ -231,7 +232,7 @@ public class VenueController {
      */
     public static class UpdateVenueRequest {
         private String name;
-        private String address;
+        private Address address;
         private int capacity;
         private String contactName;
         private String contactEmail;
@@ -239,7 +240,7 @@ public class VenueController {
 
         // Getters
         public String getName() { return name; }
-        public String getAddress() { return address; }
+        public Address getAddress() { return address; }
         public int getCapacity() { return capacity; }
         public String getContactName() { return contactName; }
         public String getContactEmail() { return contactEmail; }
@@ -247,7 +248,7 @@ public class VenueController {
 
         // Setters
         public void setName(String name) { this.name = name; }
-        public void setAddress(String address) { this.address = address; }
+        public void setAddress(Address address) { this.address = address; }
         public void setCapacity(int capacity) { this.capacity = capacity; }
         public void setContactName(String contactName) { this.contactName = contactName; }
         public void setContactEmail(String contactEmail) { this.contactEmail = contactEmail; }

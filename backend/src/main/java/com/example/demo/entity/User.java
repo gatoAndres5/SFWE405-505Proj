@@ -1,8 +1,11 @@
 package com.example.demo.entity;
 
 import java.time.Instant;
+import java.util.List;
+import java.util.ArrayList;
 
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(
@@ -26,8 +29,12 @@ public class User {
     private String email;
 
     // store a BCrypt hash, NOT the raw password
+    @JsonIgnore
     @Column(nullable = false, length = 100)
     private String passwordHash;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<EventAssignment> eventAssignments = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)

@@ -15,17 +15,30 @@ public class CorsConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
 
-        // allow your frontend origin
+        // Allow your frontend origin
         config.setAllowedOrigins(List.of("http://localhost:5173"));
 
-        //  allow HTTP methods
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        // IMPORTANT: include PATCH
+        config.setAllowedMethods(List.of(
+            "GET",
+            "POST",
+            "PUT",
+            "PATCH",
+            "DELETE",
+            "OPTIONS"
+        ));
 
-        //  allow headers 
-        config.setAllowedHeaders(List.of("*"));
+        // Allow headers (explicit is better than "*")
+        config.setAllowedHeaders(List.of(
+            "Authorization",
+            "Content-Type"
+        ));
 
-        //  allow sending Authorization header
+        // Allow credentials (needed for Authorization header)
         config.setAllowCredentials(true);
+
+        // Optional but helpful: expose headers if needed
+        config.setExposedHeaders(List.of("Authorization"));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
