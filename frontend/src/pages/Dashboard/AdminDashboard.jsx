@@ -1,53 +1,22 @@
-export default function AdminDashboard({ user }) {
+export default function AdminDashboard({ user, dashboardData }) {
   const stats = [
-    { label: "Total Events", value: 12 },
-    { label: "Active Events", value: 5 },
-    { label: "Participants", value: 148 },
-    { label: "Pending Registrations", value: 9 },
-    { label: "Active Bookings", value: 6 },
-    { label: "Vendors", value: 18 },
-  ];
-
-  const upcomingEvents = [
+    { label: "Total Events", value: dashboardData?.stats?.totalEvents ?? 0 },
+    { label: "Active Events", value: dashboardData?.stats?.activeEvents ?? 0 },
     {
-      id: 1,
-      title: "Spring Conference",
-      date: "Apr 25, 2026",
-      time: "10:00 AM",
-      venue: "Student Union",
-      category: "Conference",
+      label: "Participants",
+      value: dashboardData?.stats?.totalParticipants ?? 0,
     },
     {
-      id: 2,
-      title: "Vendor Fair",
-      date: "Apr 29, 2026",
-      time: "9:00 AM",
-      venue: "Main Hall",
-      category: "Expo",
+      label: "Pending Registrations",
+      value: dashboardData?.stats?.pendingRegistrations ?? 0,
     },
     {
-      id: 3,
-      title: "Leadership Summit",
-      date: "May 03, 2026",
-      time: "11:00 AM",
-      venue: "Innovation Center",
-      category: "Summit",
-    },
-    {
-      id: 4,
-      title: "Community Meetup",
-      date: "May 06, 2026",
-      time: "5:30 PM",
-      venue: "Downtown Center",
-      category: "Meetup",
+      label: "Active Bookings",
+      value: dashboardData?.stats?.activeBookings ?? 0,
     },
   ];
 
-  const alerts = [
-    "3 registrations are still pending review.",
-    "2 bookings are awaiting confirmation.",
-    "1 event starts within the next 24 hours.",
-  ];
+  const upcomingEvents = (dashboardData?.upcomingEvents ?? []).slice(0, 3);
 
   return (
     <>
@@ -62,9 +31,9 @@ export default function AdminDashboard({ user }) {
         <div className="dashboard-hero-badge">Admin View</div>
       </section>
 
-      <section className="dashboard-stats-grid">
+      <section className="dashboard-stats-grid compact">
         {stats.map((stat) => (
-          <div key={stat.label} className="dashboard-stat-card">
+          <div key={stat.label} className="dashboard-stat-card compact">
             <p className="dashboard-stat-label">{stat.label}</p>
             <h2 className="dashboard-stat-value">{stat.value}</h2>
           </div>
@@ -80,33 +49,25 @@ export default function AdminDashboard({ user }) {
             </div>
 
             <div className="dashboard-list">
-              {upcomingEvents.map((event) => (
-                <div key={event.id} className="dashboard-list-item">
-                  <div>
-                    <h3>{event.title}</h3>
-                    <p>{event.date} • {event.time}</p>
-                    <p>{event.venue}</p>
-                  </div>
-                  <div className="dashboard-list-meta">
-                    <strong>{event.category}</strong>
-                    <span>Event Type</span>
-                  </div>
+              {upcomingEvents.length === 0 ? (
+                <div className="dashboard-empty-state">
+                  <p>No upcoming events found.</p>
                 </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="dashboard-panel">
-            <div className="dashboard-panel-header">
-              <h2>Venue Map Preview</h2>
-              <p>Visual overview of where venues are located.</p>
-            </div>
-
-            <div className="dashboard-map-placeholder">
-              <div className="dashboard-map-box">
-                <span>Map Preview</span>
-                <p>Later this can display venue markers using venue coordinates.</p>
-              </div>
+              ) : (
+                upcomingEvents.map((event) => (
+                  <div key={event.id} className="dashboard-list-item">
+                    <div>
+                      <h3>{event.name}</h3>
+                      <p>{new Date(event.startDateTime).toLocaleString()}</p>
+                      <p>
+                        {event.venue?.name ||
+                          event.venueName ||
+                          "No venue assigned"}
+                      </p>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </div>
@@ -115,33 +76,43 @@ export default function AdminDashboard({ user }) {
           <div className="dashboard-panel">
             <div className="dashboard-panel-header">
               <h2>Recent Alerts</h2>
-              <p>Items that may need attention.</p>
+              <p>Quick system summary.</p>
             </div>
 
             <div className="dashboard-alert-list">
-              {alerts.map((alert, index) => (
-                <div key={index} className="dashboard-alert-item">
-                  {alert}
-                </div>
-              ))}
+              <div className="dashboard-alert-item">
+                {dashboardData?.stats?.pendingRegistrations ?? 0} pending
+                registrations.
+              </div>
+              <div className="dashboard-alert-item">
+                {dashboardData?.stats?.activeBookings ?? 0} active bookings.
+              </div>
+              <div className="dashboard-alert-item">
+                {dashboardData?.stats?.activeEvents ?? 0} active events right
+                now.
+              </div>
             </div>
           </div>
 
           <div className="dashboard-panel">
             <div className="dashboard-panel-header">
-              <h2>System Notes</h2>
-              <p>Placeholder content for layout preview.</p>
+              <h2>Quick Summary</h2>
+              <p>Current platform snapshot.</p>
             </div>
 
-            <div className="dashboard-notes-box">
-              <p>
-                Use this area later for announcements, reminders, or recently
-                updated records.
-              </p>
-              <p>
-                You could also show pending approvals, recent changes, or system
-                summaries here.
-              </p>
+            <div className="dashboard-alert-list">
+              <div className="dashboard-alert-item">
+                {dashboardData?.stats?.totalEvents ?? 0} total events in the
+                system.
+              </div>
+              <div className="dashboard-alert-item">
+                {dashboardData?.stats?.totalParticipants ?? 0} registered
+                participants.
+              </div>
+              <div className="dashboard-alert-item">
+                {dashboardData?.upcomingEvents?.length ?? 0} upcoming events
+                scheduled.
+              </div>
             </div>
           </div>
         </div>

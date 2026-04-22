@@ -199,4 +199,15 @@ public class UserService {
             "You are not allowed to view assigned events."
         );
     }
+    @Transactional(readOnly = true)
+    public List<Event> getAssignedEventsByUsername(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found."));
+
+        return eventAssignmentRepository.findByUser_Id(user.getId())
+                .stream()
+                .filter(EventAssignment::isActive)
+                .map(EventAssignment::getEvent)
+                .toList();
+    }
 }

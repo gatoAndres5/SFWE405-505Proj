@@ -1,43 +1,24 @@
-export default function ParticipantDashboard({ user }) {
+export default function ParticipantDashboard({ user, dashboardData }) {
   const stats = [
-    { label: "My Registrations", value: 4 },
-    { label: "Approved", value: 2 },
-    { label: "Pending", value: 2 },
-    { label: "Upcoming Events", value: 3 },
-  ];
-
-  const upcomingEvents = [
     {
-      id: 1,
-      title: "Spring Conference",
-      date: "Apr 25, 2026",
-      time: "10:00 AM",
-      venue: "Student Union",
-      status: "Approved",
+      label: "My Registrations",
+      value: dashboardData?.stats?.myRegistrations ?? 0,
     },
     {
-      id: 2,
-      title: "Networking Night",
-      date: "Apr 28, 2026",
-      time: "6:00 PM",
-      venue: "Main Hall",
-      status: "Pending",
+      label: "Approved Registrations",
+      value: dashboardData?.stats?.approvedRegistrations ?? 0,
     },
     {
-      id: 3,
-      title: "Tech Expo",
-      date: "May 02, 2026",
-      time: "1:00 PM",
-      venue: "Innovation Center",
-      status: "Approved",
+      label: "Pending Registrations",
+      value: dashboardData?.stats?.pendingRegistrations ?? 0,
+    },
+    {
+      label: "Upcoming Events",
+      value: dashboardData?.stats?.upcomingEvents ?? 0,
     },
   ];
 
-  const alerts = [
-    "Your registration for Networking Night is still pending.",
-    "You have 1 event starting within the next 3 days.",
-    "Registration is open for 2 active events.",
-  ];
+  const upcomingEvents = dashboardData?.upcomingEvents ?? [];
 
   return (
     <>
@@ -45,16 +26,16 @@ export default function ParticipantDashboard({ user }) {
         <div>
           <h1>Dashboard</h1>
           <p>
-            Welcome back, {user?.name}. View your registrations, upcoming
-            events, and venue information.
+            Welcome back, {user?.name}. Check your registration status, view upcoming
+            events, and complete your participant profile.
           </p>
         </div>
         <div className="dashboard-hero-badge">Participant View</div>
       </section>
 
-      <section className="dashboard-stats-grid">
+      <section className="dashboard-stats-grid compact">
         {stats.map((stat) => (
-          <div key={stat.label} className="dashboard-stat-card">
+          <div key={stat.label} className="dashboard-stat-card compact">
             <p className="dashboard-stat-label">{stat.label}</p>
             <h2 className="dashboard-stat-value">{stat.value}</h2>
           </div>
@@ -70,52 +51,73 @@ export default function ParticipantDashboard({ user }) {
             </div>
 
             <div className="dashboard-list">
-              {upcomingEvents.map((event) => (
-                <div key={event.id} className="dashboard-list-item">
-                  <div>
-                    <h3>{event.title}</h3>
-                    <p>{event.date} • {event.time}</p>
-                    <p>{event.venue}</p>
+              {upcomingEvents.length === 0 ? (
+                <div className="dashboard-empty-state">
+                  <p>No upcoming events found.</p>
+                </div>
+              ) : (
+                upcomingEvents.map((event) => (
+                  <div key={event.id} className="dashboard-list-item">
+                    <div>
+                      <h3>{event.name}</h3>
+                      <p>{new Date(event.startDateTime).toLocaleString()}</p>
+                      {event.venue?.name || event.venueName ? (
+                        <p>{event.venue?.name || event.venueName}</p>
+                      ) : (
+                        <p className="muted">No venue</p>
+                      )}
+                    </div>
+
+                    <span
+                      className={`dashboard-status-badge ${(
+                        event.registrationStatus || "pending"
+                      ).toLowerCase()}`}
+                    >
+                      {event.registrationStatus || "PENDING"}
+                    </span>
                   </div>
-                  <span className={`dashboard-status-badge ${event.status.toLowerCase()}`}>
-                    {event.status}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="dashboard-panel">
-            <div className="dashboard-panel-header">
-              <h2>Venue Map Preview</h2>
-              <p>Preview where your upcoming events are located.</p>
-            </div>
-
-            <div className="dashboard-map-placeholder">
-              <div className="dashboard-map-box">
-                <span>Map Preview</span>
-                <p>Replace this later with an actual map component.</p>
-              </div>
+                ))
+              )}
             </div>
           </div>
         </div>
 
-        <div className="dashboard-side-column">
-          <div className="dashboard-panel">
-            <div className="dashboard-panel-header">
-              <h2>Notifications</h2>
-              <p>Important updates related to your account.</p>
-            </div>
+       <div className="dashboard-side-column">
+        <div className="dashboard-panel">
+          <div className="dashboard-panel-header">
+            <h2>Registration Status</h2>
+            <p>Your current registration updates.</p>
+          </div>
 
-            <div className="dashboard-alert-list">
-              {alerts.map((alert, index) => (
-                <div key={index} className="dashboard-alert-item">
-                  {alert}
-                </div>
-              ))}
+          <div className="dashboard-alert-list">
+            <div className="dashboard-alert-item">
+              {dashboardData?.stats?.pendingRegistrations ?? 0} registrations are still pending.
+            </div>
+            <div className="dashboard-alert-item">
+              {dashboardData?.stats?.approvedRegistrations ?? 0} registrations are approved.
+            </div>
+            <div className="dashboard-alert-item">
+              {dashboardData?.stats?.upcomingEvents ?? 0} upcoming events on your schedule.
             </div>
           </div>
         </div>
+
+        <div className="dashboard-panel">
+          <div className="dashboard-panel-header">
+            <h2>Complete Your Profile</h2>
+            <p>Finish or update your participant account information.</p>
+          </div>
+
+          <div className="dashboard-alert-list">
+            <div className="dashboard-alert-item">
+              Review your participant details and make sure your profile information is up to date.
+            </div>
+            <div className="dashboard-alert-item">
+              Visit the Participants page to finish or edit your registration account.
+            </div>
+          </div>
+        </div>
+      </div>
       </section>
     </>
   );

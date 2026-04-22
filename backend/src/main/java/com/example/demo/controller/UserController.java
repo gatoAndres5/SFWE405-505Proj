@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.Authentication;
 
 import com.example.demo.entity.Event;
 import com.example.demo.entity.User;
@@ -166,5 +167,18 @@ public class UserController {
     @GetMapping("/{id}/events")
     public List<Event> getUserEvents(@PathVariable Long id) {
         return userService.getAssignedEvents(id);
+    }
+    /**
+     * Retrieves the events assigned to the currently authenticated user.
+     *
+     * Allowed Roles: ADMIN, ORGANIZER, STAFF
+     *
+     * @param authentication injected by Spring Security — contains the logged-in username
+     * @return list of events assigned to the current user
+     */
+    @PreAuthorize("hasAnyRole('ADMIN', 'ORGANIZER', 'STAFF')")
+    @GetMapping("/me/events")
+    public List<Event> getMyEvents(Authentication authentication) {
+        return userService.getAssignedEventsByUsername(authentication.getName());
     }
 }

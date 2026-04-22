@@ -1,43 +1,27 @@
-export default function StaffDashboard({ user }) {
+export default function StaffDashboard({ user, dashboardData }) {
+  const isOrganizer = user?.role === "ORGANIZER";
+
   const stats = [
-    { label: "Assigned Events", value: 3 },
-    { label: "Pending Registrations", value: 7 },
-    { label: "Bookings", value: 5 },
-    { label: "Schedule Items", value: 12 },
-  ];
-
-  const assignedEvents = [
     {
-      id: 1,
-      title: "Spring Conference",
-      date: "Apr 25, 2026",
-      time: "10:00 AM",
-      venue: "Student Union",
-      registrations: 24,
+      label: "Assigned Events",
+      value: dashboardData?.stats?.assignedEvents ?? 0,
     },
     {
-      id: 2,
-      title: "Vendor Fair",
-      date: "Apr 29, 2026",
-      time: "9:00 AM",
-      venue: "Main Hall",
-      registrations: 18,
+      label: "Pending Registrations",
+      value: dashboardData?.stats?.pendingRegistrations ?? 0,
     },
     {
-      id: 3,
-      title: "Leadership Summit",
-      date: "May 03, 2026",
-      time: "11:00 AM",
-      venue: "Innovation Center",
-      registrations: 32,
+      label: "Bookings",
+      value: dashboardData?.stats?.activeBookings ?? 0,
+    },
+    {
+      label: "Schedule Items",
+      value: dashboardData?.stats?.scheduleItems ?? 0,
     },
   ];
 
-  const alerts = [
-    "2 registrations are awaiting review for your assigned events.",
-    "1 booking request still needs confirmation.",
-    "An assigned event begins within the next 24 hours.",
-  ];
+  const assignedEvents = (dashboardData?.assignedEvents ?? []).slice(0, 3);
+  
 
   return (
     <>
@@ -45,16 +29,20 @@ export default function StaffDashboard({ user }) {
         <div>
           <h1>Dashboard</h1>
           <p>
-            Welcome back, {user?.name}. Monitor your assigned events, schedules,
-            registrations, and venue locations.
+            Welcome back, {user?.name}.{" "}
+            {isOrganizer
+              ? "Manage your assigned events and oversee registrations and bookings."
+              : "Monitor your assigned events and support event operations."}
           </p>
         </div>
-        <div className="dashboard-hero-badge">Staff / Organizer View</div>
+        <div className="dashboard-hero-badge">
+          {isOrganizer ? "Organizer View" : "Staff View"}
+        </div>
       </section>
 
-      <section className="dashboard-stats-grid">
+      <section className="dashboard-stats-grid compact">
         {stats.map((stat) => (
-          <div key={stat.label} className="dashboard-stat-card">
+          <div key={stat.label} className="dashboard-stat-card compact">
             <p className="dashboard-stat-label">{stat.label}</p>
             <h2 className="dashboard-stat-value">{stat.value}</h2>
           </div>
@@ -66,37 +54,38 @@ export default function StaffDashboard({ user }) {
           <div className="dashboard-panel">
             <div className="dashboard-panel-header">
               <h2>Assigned Events</h2>
-              <p>Overview of events connected to your role.</p>
+              <p>Events you are responsible for.</p>
             </div>
 
             <div className="dashboard-list">
-              {assignedEvents.map((event) => (
-                <div key={event.id} className="dashboard-list-item">
-                  <div>
-                    <h3>{event.title}</h3>
-                    <p>{event.date} • {event.time}</p>
-                    <p>{event.venue}</p>
-                  </div>
-                  <div className="dashboard-list-meta">
-                    <strong>{event.registrations}</strong>
-                    <span>Registrations</span>
-                  </div>
+              {assignedEvents.length === 0 ? (
+                <div className="dashboard-empty-state">
+                  <p>No assigned events found.</p>
                 </div>
-              ))}
-            </div>
-          </div>
+              ) : (
+                assignedEvents.map((event) => (
+                  <div key={event.id} className="dashboard-list-item">
+                    <div>
+                      <h3>{event.name}</h3>
+                      <p>
+                        {new Date(event.startDateTime).toLocaleString()}
+                      </p>
+                      {event.venue?.name || event.venueName ? (
+                        <p>{event.venue?.name || event.venueName}</p>
+                      ) : (
+                        <p className="muted">No venue</p>
+                      )}
+                    </div>
 
-          <div className="dashboard-panel">
-            <div className="dashboard-panel-header">
-              <h2>Venue Map Preview</h2>
-              <p>See where your assigned events are taking place.</p>
-            </div>
-
-            <div className="dashboard-map-placeholder">
-              <div className="dashboard-map-box">
-                <span>Map Preview</span>
-                <p>Good place for venue pins later.</p>
-              </div>
+                    <div className="dashboard-list-meta">
+                      <strong>
+                        {event.registrationCount ?? 0}
+                      </strong>
+                      <span>Registrations</span>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </div>
@@ -109,11 +98,37 @@ export default function StaffDashboard({ user }) {
             </div>
 
             <div className="dashboard-alert-list">
-              {alerts.map((alert, index) => (
-                <div key={index} className="dashboard-alert-item">
-                  {alert}
-                </div>
-              ))}
+              <div className="dashboard-alert-item">
+                {dashboardData?.stats?.pendingRegistrations ?? 0} registrations
+                awaiting review.
+              </div>
+              <div className="dashboard-alert-item">
+                {dashboardData?.stats?.activeBookings ?? 0} active bookings.
+              </div>
+              <div className="dashboard-alert-item">
+                {dashboardData?.stats?.assignedEvents ?? 0} assigned events.
+              </div>
+            </div>
+          </div>
+
+          <div className="dashboard-panel">
+            <div className="dashboard-panel-header">
+              <h2>Quick Summary</h2>
+              <p>Your current workload snapshot.</p>
+            </div>
+
+            <div className="dashboard-alert-list">
+              <div className="dashboard-alert-item">
+                {dashboardData?.stats?.assignedEvents ?? 0} total assigned
+                events.
+              </div>
+              <div className="dashboard-alert-item">
+                {dashboardData?.stats?.pendingRegistrations ?? 0} pending
+                registrations.
+              </div>
+              <div className="dashboard-alert-item">
+                {assignedEvents.length} upcoming events.
+              </div>
             </div>
           </div>
         </div>
