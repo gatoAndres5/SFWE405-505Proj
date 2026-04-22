@@ -64,10 +64,8 @@ public class ScheduleItemService {
                         .map(a -> a.getEvent().getId())
                         .collect(Collectors.toList());
 
-                System.out.println("Event IDs: " + eventIds);
 
                 List<ScheduleItem> items = scheduleItemRepository.findByEvent_IdIn(eventIds);
-                System.out.println("Schedule items found: " + items.size());
 
                 return items;
             }
