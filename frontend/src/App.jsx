@@ -3,7 +3,7 @@ import { useState } from "react";
 import AppLayout from "./components/layout/AppLayout";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
-import Dashboard from "./pages/Dashboard";
+import Dashboard from "./pages/Dashboard/DashboardPage.jsx";
 import EventsPage from "./pages/Events/EventsPage";
 import VenuesPage from "./pages/Venues/VenuesPage";
 import ParticipantsPage from "./pages/Participants/ParticipantsPage";
