@@ -23,6 +23,7 @@ export default function Sidebar({ onLogout }) {
     { to: "/vendors", label: "Vendors" },
     { to: "/bookings", label: "Bookings" },
     { to: "/registrations", label: "Registrations" },
+    { to: "/myAccount", label:"My Account"},
     { to: "/admin", label: "Admin Management" }
   ];
 
@@ -49,7 +50,7 @@ export default function Sidebar({ onLogout }) {
     <aside className="sidebar">
       <div>
         <div className="sidebar-brand">
-          <h2>Placeholder Name for Our System</h2>
+          <h2>Smart Event System</h2>
           <p>Event Management</p>
         </div>
 
