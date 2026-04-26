@@ -63,7 +63,11 @@ public class ScheduleItemService {
                         .filter(EventAssignment::isActive)
                         .map(a -> a.getEvent().getId())
                         .collect(Collectors.toList());
-                return scheduleItemRepository.findByEvent_IdIn(eventIds);
+
+
+                List<ScheduleItem> items = scheduleItemRepository.findByEvent_IdIn(eventIds);
+
+                return items;
             }
 
             case PARTICIPANT:

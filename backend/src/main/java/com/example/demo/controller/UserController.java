@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.Authentication;
 
 import com.example.demo.entity.Event;
 import com.example.demo.entity.User;
@@ -40,6 +41,17 @@ public class UserController {
         public String email;
         public String password;
         public UserRole role;
+        public Long participantId;
+    }
+
+    public static class UpdateMyAccountRequest {
+        public String username;
+        public String email;
+    }
+
+    public static class ChangeMyPasswordRequest {
+        public String currentPassword;
+        public String newPassword;
     }
 
     /**
@@ -47,7 +59,7 @@ public class UserController {
      *
      * Allowed Roles: ADMIN
      *
-     * @param request contains username, email, password, and role
+     * @param request contains username, email, password, role, and optional participantId
      * @return the created User
      */
     @PreAuthorize("hasRole('ADMIN')")
@@ -57,7 +69,8 @@ public class UserController {
                 request.username,
                 request.email,
                 request.password,
-                request.role
+                request.role,
+                request.participantId
         );
     }
 
@@ -164,5 +177,71 @@ public class UserController {
     @GetMapping("/{id}/events")
     public List<Event> getUserEvents(@PathVariable Long id) {
         return userService.getAssignedEvents(id);
+    }
+    /**
+     * Retrieves the events assigned to the currently authenticated user.
+     *
+     * Allowed Roles: ADMIN, ORGANIZER, STAFF
+     *
+     * @param authentication injected by Spring Security — contains the logged-in username
+     * @return list of events assigned to the current user
+     */
+    @PreAuthorize("hasAnyRole('ADMIN', 'ORGANIZER', 'STAFF')")
+    @GetMapping("/me/events")
+    public List<Event> getMyEvents(Authentication authentication) {
+        return userService.getAssignedEventsByUsername(authentication.getName());
+    }
+
+    /**
+     * Retrieves the currently authenticated user's account information.
+     *
+     * Allowed Roles: Authenticated users
+     *
+     * @param authentication injected by Spring Security — contains the logged-in username
+     * @return the current User
+     */
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/me")
+    public User getMe(Authentication authentication) {
+        return userService.getUserByUsername(authentication.getName());
+    }
+
+    /**
+     * Updates the currently authenticated user's username and email.
+     *
+     * Allowed Roles: Authenticated users
+     *
+     * @param authentication injected by Spring Security — contains the logged-in username
+     * @param request contains updated username and email
+     * @return updated User
+     */
+    @PreAuthorize("isAuthenticated()")
+    @PutMapping("/me")
+    public User updateMe(Authentication authentication,
+                        @RequestBody UpdateMyAccountRequest request) {
+        return userService.updateMyAccount(
+                authentication.getName(),
+                request.username,
+                request.email
+        );
+    }
+
+    /**
+     * Changes the currently authenticated user's password.
+     *
+     * Allowed Roles: Authenticated users
+     *
+     * @param authentication injected by Spring Security — contains the logged-in username
+     * @param request contains current password and new password
+     */
+    @PreAuthorize("isAuthenticated()")
+    @PutMapping("/me/password")
+    public void changeMyPassword(Authentication authentication,
+                                @RequestBody ChangeMyPasswordRequest request) {
+        userService.changeMyPassword(
+                authentication.getName(),
+                request.currentPassword,
+                request.newPassword
+        );
     }
 }

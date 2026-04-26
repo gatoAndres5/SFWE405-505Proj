@@ -4,18 +4,29 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.example.demo.entity.Booking;
-import com.example.demo.entity.BookingStatus;
 import com.example.demo.entity.Event;
+import com.example.demo.entity.EventAssignment;
 import com.example.demo.entity.EventStatus;
+import com.example.demo.entity.User;
+import com.example.demo.entity.UserRole;
 import com.example.demo.entity.Vendor;
+import com.example.demo.entity.BookingStatus;
+import com.example.demo.entity.Participant;
+
 import com.example.demo.repository.BookingRepository;
+import com.example.demo.repository.EventAssignmentRepository;
 import com.example.demo.repository.EventRepository;
+import com.example.demo.repository.UserRepository;
 import com.example.demo.repository.VendorRepository;
+import com.example.demo.repository.RegistrationRepository;
+
 
 @Service
 public class BookingService {
@@ -23,13 +34,24 @@ public class BookingService {
     private final BookingRepository bookingRepository;
     private final EventRepository eventRepository;
     private final VendorRepository vendorRepository;
+    private final UserRepository userRepository;
+    private final EventAssignmentRepository eventAssignmentRepository;
+    private final RegistrationRepository registrationRepository;
 
-    public BookingService(BookingRepository bookingRepository,
-                          EventRepository eventRepository,
-                          VendorRepository vendorRepository) {
+    public BookingService(
+                BookingRepository bookingRepository,
+                EventRepository eventRepository,
+                VendorRepository vendorRepository,
+                UserRepository userRepository,
+                EventAssignmentRepository eventAssignmentRepository,
+                RegistrationRepository registrationRepository
+    ) {
         this.bookingRepository = bookingRepository;
         this.eventRepository = eventRepository;
         this.vendorRepository = vendorRepository;
+        this.userRepository = userRepository;
+        this.eventAssignmentRepository = eventAssignmentRepository;
+        this.registrationRepository = registrationRepository;
     }
 
     @Transactional
@@ -92,9 +114,59 @@ public class BookingService {
     }
 
     @Transactional(readOnly = true)
-    public List<Booking> getAllBookings() {
-        return bookingRepository.findAll();
-    }
+        public List<Booking> getAllBookings() {
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+
+        User currentUser = userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Authenticated user not found: " + username
+                ));
+
+        // ADMIN → sees all bookings
+        if (currentUser.getRole() == UserRole.ADMIN) {
+                return bookingRepository.findAll();
+        }
+
+        // ORGANIZER / STAFF → see bookings for assigned events
+        if (currentUser.getRole() == UserRole.ORGANIZER ||
+                currentUser.getRole() == UserRole.STAFF) {
+
+                List<Long> eventIds = eventAssignmentRepository.findByUser_Id(currentUser.getId())
+                        .stream()
+                        .filter(EventAssignment::isActive)
+                        .map(a -> a.getEvent().getId())
+                        .toList();
+
+                return bookingRepository.findByEvent_IdIn(eventIds);
+        }
+
+        // PARTICIPANT → see bookings for events they are registered for
+        if (currentUser.getRole() == UserRole.PARTICIPANT) {
+
+                Participant participant = currentUser.getParticipant();
+
+                if (participant == null) {
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "No participant profile linked to this user."
+                );
+                }
+
+                List<Long> eventIds = registrationRepository
+                        .findByParticipant_ParticipantId(participant.getParticipantId())
+                        .stream()
+                        .map(r -> r.getEvent().getId())
+                        .distinct()
+                        .toList();
+
+                return bookingRepository.findByEvent_IdIn(eventIds);
+        }
+
+        return List.of();
+        }
 
     @Transactional(readOnly = true)
     public Booking getBookingById(Long id) {
