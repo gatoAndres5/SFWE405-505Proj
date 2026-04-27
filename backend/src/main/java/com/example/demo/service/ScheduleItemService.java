@@ -7,6 +7,7 @@ import com.example.demo.entity.User;
 import com.example.demo.entity.Venue;
 import com.example.demo.repository.EventAssignmentRepository;
 import com.example.demo.repository.EventRepository;
+import com.example.demo.repository.RegistrationRepository;
 import com.example.demo.repository.ScheduleItemRepository;
 import com.example.demo.repository.UserRepository;
 import com.example.demo.repository.VenueRepository;
@@ -29,17 +30,20 @@ public class ScheduleItemService {
     private final VenueRepository venueRepository;
     private final UserRepository userRepository;
     private final EventAssignmentRepository eventAssignmentRepository;
+    private final RegistrationRepository registrationRepository;
 
     public ScheduleItemService(ScheduleItemRepository scheduleItemRepository,
                               EventRepository eventRepository,
                               VenueRepository venueRepository,
                               UserRepository userRepository,
-                              EventAssignmentRepository eventAssignmentRepository) {
+                              EventAssignmentRepository eventAssignmentRepository,
+                              RegistrationRepository registrationRepository) {
         this.scheduleItemRepository = scheduleItemRepository;
         this.eventRepository = eventRepository;
         this.venueRepository = venueRepository;
         this.userRepository = userRepository;
         this.eventAssignmentRepository = eventAssignmentRepository;
+        this.registrationRepository = registrationRepository;
     }
 
     @Transactional(readOnly = true)
@@ -70,8 +74,16 @@ public class ScheduleItemService {
                 return items;
             }
 
-            case PARTICIPANT:
-                return List.of();
+            case PARTICIPANT: {
+                if (user.getParticipant() == null) return List.of();
+                Long participantId = user.getParticipant().getParticipantId();
+                List<Long> eventIds = registrationRepository
+                        .findByParticipant_ParticipantId(participantId)
+                        .stream()
+                        .map(r -> r.getEvent().getId())
+                        .collect(Collectors.toList());
+                return scheduleItemRepository.findByEvent_IdIn(eventIds);
+            }
 
             default:
                 return List.of();
