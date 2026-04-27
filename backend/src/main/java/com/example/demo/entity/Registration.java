@@ -41,6 +41,10 @@ public class Registration {
 
     // GETTERS
 
+    public Long getId(){
+        return this.id;
+    }
+
     public Event getEvent(){
         return this.event;
     }

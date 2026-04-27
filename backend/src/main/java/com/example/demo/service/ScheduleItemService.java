@@ -1,10 +1,14 @@
 package com.example.demo.service;
 
 import com.example.demo.entity.Event;
+import com.example.demo.entity.EventAssignment;
 import com.example.demo.entity.ScheduleItem;
+import com.example.demo.entity.User;
 import com.example.demo.entity.Venue;
+import com.example.demo.repository.EventAssignmentRepository;
 import com.example.demo.repository.EventRepository;
 import com.example.demo.repository.ScheduleItemRepository;
+import com.example.demo.repository.UserRepository;
 import com.example.demo.repository.VenueRepository;
 
 import org.springframework.http.HttpStatus;
@@ -15,6 +19,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class ScheduleItemService {
@@ -22,18 +27,55 @@ public class ScheduleItemService {
     private final ScheduleItemRepository scheduleItemRepository;
     private final EventRepository eventRepository;
     private final VenueRepository venueRepository;
+    private final UserRepository userRepository;
+    private final EventAssignmentRepository eventAssignmentRepository;
 
-    public ScheduleItemService(ScheduleItemRepository scheduleItemRepository, 
-                              EventRepository eventRepository, 
-                              VenueRepository venueRepository) {
+    public ScheduleItemService(ScheduleItemRepository scheduleItemRepository,
+                              EventRepository eventRepository,
+                              VenueRepository venueRepository,
+                              UserRepository userRepository,
+                              EventAssignmentRepository eventAssignmentRepository) {
         this.scheduleItemRepository = scheduleItemRepository;
         this.eventRepository = eventRepository;
         this.venueRepository = venueRepository;
+        this.userRepository = userRepository;
+        this.eventAssignmentRepository = eventAssignmentRepository;
     }
 
     @Transactional(readOnly = true)
     public List<ScheduleItem> getAllScheduleItems() {
         return scheduleItemRepository.findAll();
+    }
+
+    @Transactional(readOnly = true)
+    public List<ScheduleItem> getMyScheduleItems(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found."));
+
+        switch (user.getRole()) {
+            case ADMIN:
+                return scheduleItemRepository.findAll();
+
+            case ORGANIZER:
+            case STAFF: {
+                List<Long> eventIds = eventAssignmentRepository.findByUser_Id(user.getId())
+                        .stream()
+                        .filter(EventAssignment::isActive)
+                        .map(a -> a.getEvent().getId())
+                        .collect(Collectors.toList());
+
+
+                List<ScheduleItem> items = scheduleItemRepository.findByEvent_IdIn(eventIds);
+
+                return items;
+            }
+
+            case PARTICIPANT:
+                return List.of();
+
+            default:
+                return List.of();
+        }
     }
 
     @Transactional(readOnly = true)

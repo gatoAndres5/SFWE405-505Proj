@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import com.example.demo.entity.ScheduleItem;
@@ -55,10 +56,24 @@ public class ScheduleItemController {
      *
      * @return List of all ScheduleItems
      */
-    @PreAuthorize("hasAnyRole('ADMIN', 'ORGANIZER', 'STAFF', 'PARTICIPANT')")
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public List<ScheduleItem> getAllScheduleItems() {
         return scheduleItemService.getAllScheduleItems();
+    }
+
+    /**
+     * Returns schedule items visible to the currently logged-in user based on their role.
+     * ADMIN sees all items. ORGANIZER and STAFF see items for their assigned events.
+     * PARTICIPANT sees items for events they are registered for.
+     *
+     * @param authentication injected by Spring Security — contains the logged-in username
+     * @return filtered list of ScheduleItems
+     */
+    @PreAuthorize("hasAnyRole('ADMIN', 'ORGANIZER', 'STAFF', 'PARTICIPANT')")
+    @GetMapping("/my")
+    public List<ScheduleItem> getMyScheduleItems(Authentication authentication) {
+        return scheduleItemService.getMyScheduleItems(authentication.getName());
     }
 
     /**
@@ -68,7 +83,7 @@ public class ScheduleItemController {
      * @param id The ID of the schedule item to retrieve
      * @return The found ScheduleItem entity
      */
-    @PreAuthorize("hasAnyRole('ADMIN', 'ORGANIZER', 'STAFF', 'PARTICIPANT')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ORGANIZER')")
     @GetMapping("/{id}")
     public ScheduleItem getScheduleItemById(@PathVariable Long id) {
         return scheduleItemService.getScheduleItemById(id);
@@ -81,7 +96,7 @@ public class ScheduleItemController {
      * @param id The ID of the schedule item
      * @return A Duration object representing the time between start and end
      */
-    @PreAuthorize("hasAnyRole('ADMIN', 'ORGANIZER', 'STAFF', 'PARTICIPANT')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ORGANIZER')")
     @GetMapping("/{id}/duration")
     public java.time.Duration getDuration(@PathVariable Long id) {
         return scheduleItemService.getDuration(id);

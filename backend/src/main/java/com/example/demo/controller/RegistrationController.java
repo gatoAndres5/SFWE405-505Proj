@@ -39,23 +39,30 @@ public class RegistrationController {
      * 
      * @param eventId the ID of the event
      * @param participantId the ID of the participant
+     * @param notes the notes of the registration and it is optional
      * @return the created Registration entity
      */
     @PreAuthorize("hasAnyRole('ADMIN','ORGANIZER','PARTICIPANT')")
     @PostMapping
     public Registration register(@RequestParam Long eventId,
-                                 @RequestParam Long participantId) {
-        return registrationService.register(eventId, participantId);
+                                 @RequestParam Long participantId,
+                                @RequestParam(required = false) String notes) {
+        return registrationService.register(eventId, participantId, notes);
     }
 
     /**
-     * Retrieves all registrations in the system.
-     * 
+     * Retrieves registrations visible to the authenticated user.
+     *
+     * Behavior depends on the user's role:
+     * - ADMIN: returns all registrations in the system
+     * - ORGANIZER: returns registrations for events assigned to the organizer
+     * - STAFF: returns registrations for events assigned to the staff member
+     *
      * Accessible by ADMIN, ORGANIZER, and STAFF roles.
-     * 
-     * @return list of all registrations
+     *
+     * @return list of registrations visible to the current user
      */
-    @PreAuthorize("hasAnyRole('ADMIN','ORGANIZER','STAFF')")
+    @PreAuthorize("hasAnyRole('ADMIN','ORGANIZER','STAFF', 'PARTICIPANT')")
     @GetMapping
     public List<Registration> getAllRegistrations() {
         return registrationService.getAllRegistrations();

@@ -1,16 +1,17 @@
 package com.example.demo;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-
 import java.time.LocalDateTime;
 import java.util.Map;
 
+import com.example.demo.entity.Address;
 import com.example.demo.entity.Event;
+import com.example.demo.entity.EventAssignment;
 import com.example.demo.entity.EventStatus;
 import com.example.demo.entity.ScheduleItem;
 import com.example.demo.entity.User;
 import com.example.demo.entity.UserRole;
 import com.example.demo.entity.Venue;
+import com.example.demo.repository.EventAssignmentRepository;
 import com.example.demo.repository.EventRepository;
 import com.example.demo.repository.ScheduleItemRepository;
 import com.example.demo.repository.UserRepository;
@@ -44,13 +45,16 @@ public class ScheduleItemIntegrationTest {
     @Autowired
     private ScheduleItemRepository scheduleItemRepository;
     @Autowired
+    private EventAssignmentRepository eventAssignmentRepository;
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     private String adminToken;
     private String participantToken;
+    private String organizerToken;
+    private String staffToken;
     private Event savedEvent;
     private Venue savedVenue;
-    private ScheduleItem savedScheduleItem;
 
     private ScheduleItem createTestScheduleItem() {
         ScheduleItem item = new ScheduleItem(
@@ -67,6 +71,7 @@ public class ScheduleItemIntegrationTest {
     @BeforeEach
     public void setUp() {
         scheduleItemRepository.deleteAll();
+        eventAssignmentRepository.deleteAll();
         venueRepository.deleteAll();
         eventRepository.deleteAll();
         userRepository.deleteAll();
@@ -87,6 +92,22 @@ public class ScheduleItemIntegrationTest {
         participant.setEnabled(true);
         userRepository.save(participant);
 
+        User organizer = new User(
+            "organizer_test",
+            "organizer@test.com",
+            passwordEncoder.encode("organizer123"),
+            UserRole.ORGANIZER);
+        organizer.setEnabled(true);
+        userRepository.save(organizer);
+
+        User staff = new User(
+            "staff_test",
+            "staff@test.com",
+            passwordEncoder.encode("staff123"),
+            UserRole.STAFF);
+        staff.setEnabled(true);
+        userRepository.save(staff);
+
         Event event = new Event(
             "Test Event",
             "A test conference event",
@@ -95,17 +116,29 @@ public class ScheduleItemIntegrationTest {
             LocalDateTime.parse("2026-04-15T18:00:00"));
         savedEvent = eventRepository.save(event);
 
+        Address address = new Address(
+            "742 Evergreen Terrace",
+            "Springfield",
+            "IL",
+            "62704",
+            "USA"
+        );
         Venue venue = new Venue(
             "Main Ballroom",
-            "123 Test St",
+            address,
             200,
             "John Manager",
             "555-1234",
             "manager@test.com");
         savedVenue = venueRepository.save(venue);
 
+        eventAssignmentRepository.save(new EventAssignment(savedEvent, organizer, EventAssignment.EventAssignmentRole.ORGANIZER));
+        eventAssignmentRepository.save(new EventAssignment(savedEvent, staff, EventAssignment.EventAssignmentRole.STAFF));
+
         adminToken = loginAndGetToken("admin_test", "admin123");
         participantToken = loginAndGetToken("participant_test", "participant123");
+        organizerToken = loginAndGetToken("organizer_test", "organizer123");
+        staffToken = loginAndGetToken("staff_test", "staff123");
     }
 
     @SuppressWarnings("unchecked")
@@ -149,35 +182,33 @@ public class ScheduleItemIntegrationTest {
             .jsonPath("$.id").exists();
     }
     /**
-     * TEST 2: Read all ScheduleItems
-     * DEMONSTRATES: GET /scheduleItems works
-     * PROVES: PARTICIPANT can read, returns list
+     * TEST 2: Read all ScheduleItems restricted to ADMIN only
+     * DEMONSTRATES: GET /scheduleItems is restricted to ADMIN
+     * PROVES: PARTICIPANT cannot access the unrestricted list endpoint (403)
      */
     @Test
-    @DisplayName("GET /scheduleItems returns list for PARTICIPANT")
-    void getAllScheduleItems_shouldSucceed_forParticipant() {
+    @DisplayName("GET /scheduleItems returns 403 for PARTICIPANT")
+    void getAllScheduleItems_shouldForbid_forParticipant() {
         createTestScheduleItem();
         webTestClient.get()
             .uri("/scheduleItems")
             .header(HttpHeaders.AUTHORIZATION, "Bearer " + participantToken)
             .exchange()
-            .expectStatus().isOk()
-            .expectBodyList(Map.class)
-            .hasSize(1); 
+            .expectStatus().isForbidden();
     }
 
     /**
      * TEST 3: Get ScheduleItem by ID
-     * DEMONSTRATES: GET /scheduleItems/{id} works
-     * PROVES: Can retrieve specific item by ID
+     * DEMONSTRATES: GET /scheduleItems/{id} works for ADMIN
+     * PROVES: ADMIN can retrieve specific item by ID
      */
     @Test
-    @DisplayName("GET /scheduleItems/{id} returns schedule item by ID")
+    @DisplayName("GET /scheduleItems/{id} returns schedule item by ID for ADMIN")
     void getScheduleItemById_shouldSucceed() {
         ScheduleItem item = createTestScheduleItem();
         webTestClient.get()
             .uri("/scheduleItems/{id}", item.getId())
-            .header(HttpHeaders.AUTHORIZATION, "Bearer " + participantToken)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer " + adminToken)
             .exchange()
             .expectStatus().isOk()
             .expectBody()
@@ -194,26 +225,42 @@ public class ScheduleItemIntegrationTest {
     void getScheduleItemById_shouldReturnNotFound_whenMissing() {
         webTestClient.get()
             .uri("/scheduleItems/{id}", 999999)
-            .header(HttpHeaders.AUTHORIZATION, "Bearer " + participantToken)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer " + adminToken)
             .exchange()
             .expectStatus().isNotFound();
     }
 
     /**
      * TEST 5: Get Duration
-     * DEMONSTRATES: GET /scheduleItems/{id}/duration works
-     * PROVES: Duration calculation is correct (1 hour = 3600 seconds)
+     * DEMONSTRATES: GET /scheduleItems/{id}/duration works for ADMIN
+     * PROVES: Duration calculation is correct
      */
     @Test
-    @DisplayName("GET /scheduleItems/{id}/duration returns correct duration")
+    @DisplayName("GET /scheduleItems/{id}/duration returns correct duration for ADMIN")
     void getDuration_shouldReturn1Hour() {
         ScheduleItem item = createTestScheduleItem();
 
         webTestClient.get()
             .uri("/scheduleItems/{id}/duration", item.getId())
-            .header(HttpHeaders.AUTHORIZATION, "Bearer " + participantToken)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer " + adminToken)
             .exchange()
             .expectStatus().isOk();
+    }
+
+    /**
+     * TEST 5b: PARTICIPANT cannot access item by ID directly
+     * DEMONSTRATES: GET /scheduleItems/{id} is restricted
+     * PROVES: PARTICIPANT cannot bypass /my filtering by calling /{id} directly
+     */
+    @Test
+    @DisplayName("GET /scheduleItems/{id} returns 403 for PARTICIPANT")
+    void getScheduleItemById_shouldForbid_forParticipant() {
+        ScheduleItem item = createTestScheduleItem();
+        webTestClient.get()
+            .uri("/scheduleItems/{id}", item.getId())
+            .header(HttpHeaders.AUTHORIZATION, "Bearer " + participantToken)
+            .exchange()
+            .expectStatus().isForbidden();
     }
 
     /**
@@ -274,10 +321,16 @@ public class ScheduleItemIntegrationTest {
     @DisplayName("PUT /scheduleItems/{id}/assignVenue assigns new venue for ADMIN")
     void assignVenue_shouldSucceed_forAdmin() {
         ScheduleItem item = createTestScheduleItem();
-        
+        Address address2 = new Address(
+            "745 Evergreen Terrace",
+            "Springfield",
+            "IL",
+            "62704",
+            "USA"
+        );
         Venue venue2 = new Venue(
             "Secondary Hall",
-            "456 Another St",
+            address2,
             150,
             "Jane Admin",
             "555-5678",
@@ -383,5 +436,78 @@ public class ScheduleItemIntegrationTest {
             .header(HttpHeaders.AUTHORIZATION, "Bearer " + adminToken)
             .exchange()
             .expectStatus().isNotFound();
+    }
+
+    /**
+     * TEST 13: GET /scheduleItems/my returns all items for ADMIN
+     * DEMONSTRATES: /my endpoint works for ADMIN role
+     * PROVES: ADMIN sees all schedule items regardless of assignment
+     */
+    @Test
+    @DisplayName("GET /scheduleItems/my returns all items for ADMIN")
+    void getMyScheduleItems_shouldReturnAll_forAdmin() {
+        createTestScheduleItem();
+        webTestClient.get()
+            .uri("/scheduleItems/my")
+            .header(HttpHeaders.AUTHORIZATION, "Bearer " + adminToken)
+            .exchange()
+            .expectStatus().isOk()
+            .expectBodyList(Map.class)
+            .hasSize(1);
+    }
+
+    /**
+     * TEST 14: GET /scheduleItems/my returns only assigned event items for ORGANIZER
+     * DEMONSTRATES: /my endpoint filters by event assignment for ORGANIZER
+     * PROVES: ORGANIZER only sees items from events they are assigned to
+     */
+    @Test
+    @DisplayName("GET /scheduleItems/my returns only assigned event items for ORGANIZER")
+    void getMyScheduleItems_shouldReturnAssignedOnly_forOrganizer() {
+        createTestScheduleItem();
+        webTestClient.get()
+            .uri("/scheduleItems/my")
+            .header(HttpHeaders.AUTHORIZATION, "Bearer " + organizerToken)
+            .exchange()
+            .expectStatus().isOk()
+            .expectBodyList(Map.class)
+            .hasSize(1);
+    }
+
+    /**
+     * TEST 15: GET /scheduleItems/my returns only assigned event items for STAFF
+     * DEMONSTRATES: /my endpoint filters by event assignment for STAFF
+     * PROVES: STAFF only sees items from events they are assigned to
+     */
+    @Test
+    @DisplayName("GET /scheduleItems/my returns only assigned event items for STAFF")
+    void getMyScheduleItems_shouldReturnAssignedOnly_forStaff() {
+        createTestScheduleItem();
+        webTestClient.get()
+            .uri("/scheduleItems/my")
+            .header(HttpHeaders.AUTHORIZATION, "Bearer " + staffToken)
+            .exchange()
+            .expectStatus().isOk()
+            .expectBodyList(Map.class)
+            .hasSize(1);
+    }
+
+    /**
+     * TEST 16: GET /scheduleItems/my returns empty list for ORGANIZER with no assignments
+     * DEMONSTRATES: /my endpoint returns empty when user has no assigned events
+     * PROVES: No assignments = no schedule items returned (not an error)
+     */
+    @Test
+    @DisplayName("GET /scheduleItems/my returns empty list for ORGANIZER with no assignments")
+    void getMyScheduleItems_shouldReturnEmpty_forOrganizerWithNoAssignments() {
+        eventAssignmentRepository.deleteAll();
+        createTestScheduleItem();
+        webTestClient.get()
+            .uri("/scheduleItems/my")
+            .header(HttpHeaders.AUTHORIZATION, "Bearer " + organizerToken)
+            .exchange()
+            .expectStatus().isOk()
+            .expectBodyList(Map.class)
+            .hasSize(0);
     }
 }

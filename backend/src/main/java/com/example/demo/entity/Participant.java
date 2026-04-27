@@ -2,6 +2,9 @@ package com.example.demo.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -22,13 +25,15 @@ public class Participant {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "participant_id")
     private Long participantId;
-    
+
     @Column(nullable = false, length = 80)
     private String firstName;
 
     @Column(nullable = false, length = 80)
     private String lastName;
 
+    @NotBlank(message = "Email is required")
+    @Email(message = "Email format is invalid")
     @Column(nullable = false, unique = true, length = 160)
     private String email;
 
@@ -38,6 +43,10 @@ public class Participant {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 16)
     private Role role;
+
+    @OneToOne(mappedBy = "participant")
+    @JsonIgnore
+    private User user;
 
     @Column(nullable = false)
     private boolean active = true;
@@ -198,4 +207,7 @@ public class Participant {
         }
         return value.trim();
     }
+    public User getUser() { return user; }
+    
+    public void setUser(User user) { this.user = user; }
 }

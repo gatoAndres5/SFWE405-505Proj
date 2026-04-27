@@ -1,6 +1,7 @@
 package com.example.demo.entity;
 
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -22,7 +23,9 @@ public class Vendor {
     private String contactName;
     private String contactPhone;
     private String contactEmail;
-    private String address;
+
+    @Embedded
+    private Address address;
     private String availability;
     private boolean active;
 
@@ -33,11 +36,10 @@ public class Vendor {
     @OneToMany(mappedBy = "vendor", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Booking> bookings = new ArrayList<>();
 
-    public Vendor() {
-    }
-
+    protected Vendor() {}
+    
     public Vendor(String name, String contactName, String contactPhone,
-                  String contactEmail, String address, boolean active) {
+                  String contactEmail, Address address, boolean active) {
         this.name = name;
         this.contactName = contactName;
         this.contactPhone = contactPhone;
@@ -49,12 +51,12 @@ public class Vendor {
     }
 
     public Vendor(String name, String contactName, String contactPhone,
-                  String contactEmail, String address) {
+                  String contactEmail, Address address) {
         this(name, contactName, contactPhone, contactEmail, address, true);
     }
 
     public Vendor(String name) {
-        this(name, "Unknown", "Unknown", "Unknown", "Unknown", false);
+        this(name, "Unknown", "Unknown", "Unknown", null, false);
     }
 
     // GETTERS
@@ -75,7 +77,7 @@ public class Vendor {
         return contactEmail;
     }
 
-    public String getAddress() {
+    public Address getAddress() {
         return address;
     }
 
@@ -121,7 +123,7 @@ public class Vendor {
         this.contactEmail = contactEmail;
     }
 
-    public void setAddress(String address) {
+    public void setAddress(Address address) {
         this.address = address;
     }
 
