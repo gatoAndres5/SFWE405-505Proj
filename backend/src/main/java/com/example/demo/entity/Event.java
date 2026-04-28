@@ -21,40 +21,58 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-
+/**
+ * Represents an event in the system.
+ * Stores event attributes like id, name
+ * description, start date and time,  
+ * end date and time, associated venues,
+ * vendors, scheduled items and registrations.
+ */
 @Entity
 public class Event {
 
+    /** Unique identifier for event */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    /**Name of event */
     @NotBlank
     private String name;
 
+    /**Description of event */
     @NotBlank
     private String description;
 
+    /**Start date and time of event */
     @NotNull
     private LocalDateTime startDateTime;
 
+    /**End date and time of event */
     @NotNull
     private LocalDateTime endDateTime;
 
+    /**Status of event: DRAFT, ACTIVE OR CANCELLED*/
     @Enumerated(EnumType.STRING)
     private EventStatus status;
 
+    /**Timestamp when the event was created */
     private LocalDateTime createdAt;
+
+    /**Timestamp when the event was updated */
     private LocalDateTime updatedAt;
 
+    /**List of schedule items associated with the event (ignored in json)*/
     @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
     private List<ScheduleItem> scheduledItems = new ArrayList<>();
 
+    /**List of registrations in event (ignored in json) */
     @JsonIgnore
     @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Registration> registrations = new ArrayList<>();
 
+    /**List of vendors associated with event */
     @ManyToMany
     @JoinTable(
         name = "event_vendor",
@@ -63,6 +81,7 @@ public class Event {
     )
     private List<Vendor> vendors = new ArrayList<>();
 
+    /**List of venues associated with event */
     @ManyToMany
     @JoinTable(
         name = "event_venue",
@@ -71,20 +90,37 @@ public class Event {
     )
     private List<Venue> venues = new ArrayList<>();
 
+    /**List of assignments in event */
+    @JsonIgnore
     @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<EventAssignment> eventAssignments = new ArrayList<>();
+    private List<EventAssignment> assignments = new ArrayList<>();
 
+
+    /**Default constructor required by JPA */
     protected Event() {}
 
-
-    public Event(String name, String description, LocalDateTime startDateTime, LocalDateTime endDateTime){
+    /**
+     * Creates event with required details.
+     * @param name name of the event
+     * @param description description of the event
+     * @param startDateTime start time of event
+     * @param endDateTime end time of event
+     */
+    public Event(String name, String description, LocalDateTime startDateTime, LocalDateTime endDateTime) {
         this.name = name;
         this.description = description;
         this.startDateTime = startDateTime;
         this.endDateTime = endDateTime;
         this.status = EventStatus.DRAFT;
     }
-
+    /**
+     * Creates event with explicit status.
+     * @param name
+     * @param description
+     * @param status
+     * @param startDateTime
+     * @param endDateTime
+     */
     public Event(String name, String description, EventStatus status,
                  LocalDateTime startDateTime, LocalDateTime endDateTime) {
         this.name = name;
@@ -94,6 +130,10 @@ public class Event {
         this.endDateTime = endDateTime;
     }
 
+    /** Called automatically by JPA before the entity is persisted into the database.
+     * Sets the creation and update timestamp to current time and assigns a default 
+     * status (DRAFT) if the status has not been previously set.
+     */
     @PrePersist
     protected void onCreate() {
         LocalDateTime now = LocalDateTime.now();
@@ -104,11 +144,18 @@ public class Event {
         }
     }
 
+    /** 
+     * Called automatically by JPA before the event is updated in the database.
+     * Updates the "updatedAt" timestamp to current time. 
+     */
     @PreUpdate
     protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
-
+    
+    public List<EventAssignment> getAssignments() {
+    return assignments;
+    }
     public Long getId() {
         return id;
     }
@@ -193,6 +240,10 @@ public class Event {
         this.vendors = vendors;
     }
 
+    /**
+     * Add venue to event and ensures bidirectional consistency with venue class.
+     * @param venue venue to add into event
+     */
     public void addVenue(Venue venue) {
         if (!this.venues.contains(venue)) {
             this.venues.add(venue);
@@ -201,12 +252,19 @@ public class Event {
             venue.getEvents().add(this);
         }
     }
-
+    /**
+     * Removes venue from event.
+     * @param venue venue to remove
+     */
     public void removeVenue(Venue venue) {
         this.venues.remove(venue);
         venue.getEvents().remove(this);
     }
 
+    /**
+     * Adds a schedule item to event and sets the event for the item.
+     * @param item
+     */
     public void addScheduleItem(ScheduleItem item) {
         if (!this.scheduledItems.contains(item)) {
             this.scheduledItems.add(item);
@@ -214,6 +272,10 @@ public class Event {
         item.setEvent(this);
     }
 
+    /**
+     * Removes a scheduled item from event.
+     * @param item item to remove from event 
+     */
     public void removeScheduleItem(ScheduleItem item) {
         this.scheduledItems.remove(item);
         item.setEvent(null);
