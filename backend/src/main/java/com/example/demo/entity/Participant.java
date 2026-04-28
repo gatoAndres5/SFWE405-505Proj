@@ -44,6 +44,10 @@ public class Participant {
     @Column(nullable = false, length = 16)
     private Role role;
 
+    @OneToOne(mappedBy = "participant")
+    @JsonIgnore
+    private User user;
+
     @Column(nullable = false)
     private boolean active = true;
 
@@ -203,4 +207,7 @@ public class Participant {
         }
         return value.trim();
     }
+    public User getUser() { return user; }
+    
+    public void setUser(User user) { this.user = user; }
 }

@@ -3,7 +3,7 @@ import { useState } from "react";
 import AppLayout from "./components/layout/AppLayout";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
-import Dashboard from "./pages/Dashboard";
+import Dashboard from "./pages/Dashboard/DashboardPage.jsx";
 import EventsPage from "./pages/Events/EventsPage";
 import VenuesPage from "./pages/Venues/VenuesPage";
 import ParticipantsPage from "./pages/Participants/ParticipantsPage";
@@ -14,6 +14,7 @@ import AdminManagementPage from "./pages/AdminManagement/AdminManagementPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import ScheduleItemsPage from "./pages/ScheduleItems/ScheduleItemsPage";
+import MyAccountPage from "./pages/MyAccount/MyAccountPage";
 import "./App.css";
 
 function ProtectedRoute({ isAuthenticated, children }) {
@@ -125,6 +126,17 @@ export default function App() {
           <ProtectedRoute isAuthenticated={isAuthenticated}>
             <AppLayout onLogout={handleLogout}>
               <RegistrationsPage />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/myAccount"
+        element={
+          <ProtectedRoute isAuthenticated={isAuthenticated}>
+            <AppLayout onLogout={handleLogout}>
+              <MyAccountPage />
             </AppLayout>
           </ProtectedRoute>
         }

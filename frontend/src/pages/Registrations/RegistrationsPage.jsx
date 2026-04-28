@@ -172,12 +172,17 @@ export default function RegistrationsPage() {
     setMessage("");
 
     try {
-      await Promise.all([
-        fetchRegistrations(),
-        fetchEvents(),
-        fetchParticipants(),
-        ...(realIsAdmin ? [fetchUsers()] : []),
-      ]);
+      const requests = [fetchRegistrations(), fetchEvents()];
+
+      if (isAdmin || isOrganizer) {
+        requests.push(fetchParticipants());
+      }
+
+      if (realIsAdmin) {
+        requests.push(fetchUsers());
+      }
+
+      await Promise.all(requests);
     } catch (err) {
       setError(err.message || "Failed to load page data.");
     } finally {
@@ -189,13 +194,25 @@ export default function RegistrationsPage() {
     loadPageData();
   }, []);
 
+  const resolvedParticipantId = useMemo(() => {
+    if (!isParticipant) return null;
+
+    if (effectiveParticipantId) return effectiveParticipantId;
+
+    const firstRegistrationWithParticipant = registrations.find(
+      (registration) => registration.participant?.participantId != null
+    );
+
+    return firstRegistrationWithParticipant?.participant?.participantId ?? null;
+  }, [isParticipant, effectiveParticipantId, registrations]);
+
   useEffect(() => {
-    if (isParticipant && effectiveParticipantId) {
-      setParticipantId(String(effectiveParticipantId));
+    if (isParticipant && resolvedParticipantId) {
+      setParticipantId(String(resolvedParticipantId));
     } else if (!canSelectParticipant) {
       setParticipantId("");
     }
-  }, [isParticipant, effectiveParticipantId, canSelectParticipant]);
+  }, [isParticipant, resolvedParticipantId, canSelectParticipant]);
 
   useEffect(() => {
     if (rolePreview !== "PARTICIPANT") {
@@ -304,7 +321,7 @@ export default function RegistrationsPage() {
   }, [participants]);
 
   const selectedParticipant = useMemo(() => {
-    const lookupId = canSelectParticipant ? participantId : effectiveParticipantId;
+    const lookupId = canSelectParticipant ? participantId : resolvedParticipantId;
 
     return visibleParticipants.find(
       (participant) =>
@@ -313,7 +330,7 @@ export default function RegistrationsPage() {
   }, [
     visibleParticipants,
     participantId,
-    effectiveParticipantId,
+    resolvedParticipantId,
     canSelectParticipant,
   ]);
 
@@ -324,7 +341,7 @@ export default function RegistrationsPage() {
       filtered = filtered.filter(
         (registration) =>
           String(registration.participant?.participantId) ===
-          String(effectiveParticipantId)
+          String(resolvedParticipantId)
       );
     } else if (
       realIsAdmin &&
@@ -346,7 +363,9 @@ export default function RegistrationsPage() {
 
       filtered = filtered.filter((registration) => {
         const registrationId = String(registration.id ?? "").toLowerCase();
-        const status = String(registration.status ?? "").toLowerCase();
+        const status = String(
+          registration.registrationStatus ?? registration.status ?? ""
+        ).toLowerCase();
         const notes = String(registration.notes ?? "").toLowerCase();
 
         const eventName = String(
@@ -363,7 +382,7 @@ export default function RegistrationsPage() {
           .trim()
           .toLowerCase();
 
-        const participantId = String(
+        const participantIdText = String(
           registration.participant?.participantId ?? ""
         ).toLowerCase();
 
@@ -373,7 +392,7 @@ export default function RegistrationsPage() {
           notes.includes(query) ||
           eventName.includes(query) ||
           participantName.includes(query) ||
-          participantId.includes(query)
+          participantIdText.includes(query)
         );
       });
     }
@@ -382,7 +401,7 @@ export default function RegistrationsPage() {
   }, [
     registrations,
     isParticipant,
-    effectiveParticipantId,
+    resolvedParticipantId,
     realIsAdmin,
     effectiveRole,
     previewUserEventIds,
@@ -397,7 +416,7 @@ export default function RegistrationsPage() {
     setMessage("");
 
     const effectiveCreateParticipantId = isParticipant
-      ? effectiveParticipantId
+      ? resolvedParticipantId
       : participantId;
 
     if (!eventId) {
@@ -539,12 +558,12 @@ export default function RegistrationsPage() {
 
   return (
     <div className="reg-page">
-
       {message && <div className="reg-message success">{message}</div>}
       {error && <div className="reg-message error">{error}</div>}
 
-      <section className="reg-section">
-        <h3 className="reg-section-title">Preview Page As</h3>
+      {realIsAdmin && (
+        <section className="reg-section">
+          <h3 className="reg-section-title">Preview Page As</h3>
           <RolePreviewPanel
             realIsAdmin={realIsAdmin}
             rolePreview={rolePreview}
@@ -562,7 +581,8 @@ export default function RegistrationsPage() {
             staffUsers={staffUsers}
             getStaffLabel={getStaffLabel}
           />
-      </section>
+        </section>
+      )}
 
       {canCreate && (
         <section className="reg-section">
@@ -583,7 +603,7 @@ export default function RegistrationsPage() {
             getEventLabel={getEventLabel}
             getParticipantLabel={getParticipantLabel}
             formatDateTime={formatDateTime}
-            effectiveParticipantId={effectiveParticipantId}
+            effectiveParticipantId={resolvedParticipantId}
             canSelectParticipant={canSelectParticipant}
             isParticipant={isParticipant}
           />
@@ -591,10 +611,10 @@ export default function RegistrationsPage() {
       )}
 
       <section className="reg-section">
-      <h3 className="reg-section-title">Existing Registrations</h3>
+        <h3 className="reg-section-title">Existing Registrations</h3>
 
-      <div className="reg-filter-bar">
-        <label className="reg-label">Search registrations</label>
+        <div className="reg-filter-bar">
+          <label className="reg-label">Search registrations</label>
           <input
             className="reg-input"
             id="registrationSearch"
@@ -603,7 +623,6 @@ export default function RegistrationsPage() {
             onChange={(e) => setRegistrationSearch(e.target.value)}
             placeholder="Search by ID, event, participant, status, or notes"
           />
-          
 
           <label className="reg-label">Filter by status</label>
           <select
@@ -621,30 +640,30 @@ export default function RegistrationsPage() {
           </select>
         </div>
 
-      {loading ? (
-        <p className="reg-muted">Loading registrations...</p>
-      ) : visibleRegistrations.length === 0 ? (
-        <p className="reg-table-empty">No registrations found.</p>
-      ) : (
-        <RegistrationTable
-          registrations={visibleRegistrations}
-          canUpdateStatus={canUpdateStatus}
-          canCancel={canCancel}
-          canCheckInOut={canCheckInOut}
-          canDelete={canDelete}
-          selectedStatus={selectedStatus}
-          handleStatusChange={handleStatusChange}
-          handleUpdateStatus={handleUpdateStatus}
-          handleCancelRegistration={handleCancelRegistration}
-          handleCheckIn={handleCheckIn}
-          handleCheckOut={handleCheckOut}
-          handleDeleteRegistration={handleDeleteRegistration}
-          getEventName={getEventName}
-          getParticipantName={getParticipantName}
-          formatDateTime={formatDateTime}
-          statusOptions={statusOptions}
-        />
-      )}
+        {loading ? (
+          <p className="reg-muted">Loading registrations...</p>
+        ) : visibleRegistrations.length === 0 ? (
+          <p className="reg-table-empty">No registrations found.</p>
+        ) : (
+          <RegistrationTable
+            registrations={visibleRegistrations}
+            canUpdateStatus={canUpdateStatus}
+            canCancel={canCancel}
+            canCheckInOut={canCheckInOut}
+            canDelete={canDelete}
+            selectedStatus={selectedStatus}
+            handleStatusChange={handleStatusChange}
+            handleUpdateStatus={handleUpdateStatus}
+            handleCancelRegistration={handleCancelRegistration}
+            handleCheckIn={handleCheckIn}
+            handleCheckOut={handleCheckOut}
+            handleDeleteRegistration={handleDeleteRegistration}
+            getEventName={getEventName}
+            getParticipantName={getParticipantName}
+            formatDateTime={formatDateTime}
+            statusOptions={statusOptions}
+          />
+        )}
       </section>
     </div>
   );

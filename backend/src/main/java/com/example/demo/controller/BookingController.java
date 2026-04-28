@@ -50,7 +50,7 @@ public class BookingController {
      * 
      * @return list of bookings
      */
-    @PreAuthorize("hasAnyRole('ADMIN','ORGANIZER')")
+    @PreAuthorize("hasAnyRole('ADMIN','ORGANIZER', 'STAFF', 'PARTICIPANT')")
     @GetMapping
     public List<Booking> getAllBookings() {
         return bookingService.getAllBookings();

@@ -12,9 +12,11 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.example.demo.entity.Event;
 import com.example.demo.entity.EventAssignment;
+import com.example.demo.entity.Participant;
 import com.example.demo.entity.User;
 import com.example.demo.entity.UserRole;
 import com.example.demo.repository.EventAssignmentRepository;
+import com.example.demo.repository.ParticipantRepository;
 import com.example.demo.repository.UserRepository;
 
 @Service
@@ -23,17 +25,20 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final EventAssignmentRepository eventAssignmentRepository;
+    private final ParticipantRepository participantRepository;
 
     public UserService(UserRepository userRepository,
                    PasswordEncoder passwordEncoder,
-                   EventAssignmentRepository eventAssignmentRepository) {
+                   EventAssignmentRepository eventAssignmentRepository,
+                   ParticipantRepository participantRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.eventAssignmentRepository = eventAssignmentRepository;
+        this.participantRepository = participantRepository;
     }
 
     @Transactional
-    public User createUser(String username, String email, String rawPassword, UserRole role) {
+    public User createUser(String username, String email, String rawPassword, UserRole role, Long participantId) {
         if (username == null || username.isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Username is required.");
         }
@@ -62,6 +67,25 @@ public class UserService {
 
         User user = new User(username, email, hashedPassword, role);
         user.setEnabled(true);
+
+        if (role == UserRole.PARTICIPANT) {
+            if (participantId == null) {
+                throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Participant users must be linked to a participant."
+                );
+            }
+
+            Participant participant = participantRepository.findById(participantId)
+                .orElseThrow(() -> new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Participant not found: " + participantId
+                ));
+
+            user.setParticipant(participant);
+        } else {
+            user.setParticipant(null);
+        }
 
         return userRepository.save(user);
     }
@@ -117,6 +141,11 @@ public class UserService {
         }
 
         user.setRole(parsedRole);
+
+        if (parsedRole != UserRole.PARTICIPANT) {
+            user.setParticipant(null);
+        }
+
         return userRepository.save(user);
     }
 
@@ -131,6 +160,7 @@ public class UserService {
         user.setEnabled(false);
         return userRepository.save(user);
     }
+
     public List<Event> getAssignedEvents(Long id) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
@@ -168,5 +198,90 @@ public class UserService {
             HttpStatus.FORBIDDEN,
             "You are not allowed to view assigned events."
         );
+    }
+    @Transactional(readOnly = true)
+    public List<Event> getAssignedEventsByUsername(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found."));
+
+        return eventAssignmentRepository.findByUser_Id(user.getId())
+                .stream()
+                .filter(EventAssignment::isActive)
+                .map(EventAssignment::getEvent)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public User getUserByUsername(String username) {
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "User not found."
+                ));
+    }
+
+    @Transactional
+    public User updateMyAccount(String currentUsername, String newUsername, String newEmail) {
+        User user = userRepository.findByUsername(currentUsername)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "User not found."
+                ));
+
+        if (newUsername == null || newUsername.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Username is required.");
+        }
+
+        if (newEmail == null || newEmail.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email is required.");
+        }
+
+        String trimmedUsername = newUsername.trim();
+        String trimmedEmail = newEmail.trim();
+
+        if (!trimmedUsername.equals(user.getUsername())
+                && userRepository.existsByUsername(trimmedUsername)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Username already exists.");
+        }
+
+        if (!trimmedEmail.equals(user.getEmail())
+                && userRepository.existsByEmail(trimmedEmail)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already exists.");
+        }
+
+        user.setUsername(trimmedUsername);
+        user.setEmail(trimmedEmail);
+
+        return userRepository.save(user);
+    }
+
+    @Transactional
+    public void changeMyPassword(String username, String currentPassword, String newPassword) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "User not found."
+                ));
+
+        if (currentPassword == null || currentPassword.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Current password is required.");
+        }
+
+        if (newPassword == null || newPassword.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "New password is required.");
+        }
+
+        if (!passwordEncoder.matches(currentPassword, user.getPasswordHash())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Current password is incorrect.");
+        }
+        if (passwordEncoder.matches(newPassword, user.getPasswordHash())) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "New password must be different from current password."
+            );
+        }
+
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
     }
 }

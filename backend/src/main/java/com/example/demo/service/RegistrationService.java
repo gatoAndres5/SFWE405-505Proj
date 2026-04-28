@@ -132,7 +132,27 @@ public class RegistrationService {
                 return registrationRepository.findByEvent_IdIn(eventIds);
         }
 
-        return List.of();
+        // PARTICIPANT → only see their own registrations
+        if (currentUser.getRole() == UserRole.PARTICIPANT) {
+
+        Participant participant = currentUser.getParticipant();
+
+        if (participant == null) {
+                throw new ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                "No participant profile linked to this user."
+                );
+        }
+
+        return registrationRepository.findByParticipant_ParticipantId(
+                participant.getParticipantId()
+        );
+        }
+
+        throw new ResponseStatusException(
+        HttpStatus.FORBIDDEN,
+        "You are not allowed to view registrations."
+        );
      }
 
     @Transactional(readOnly = true)

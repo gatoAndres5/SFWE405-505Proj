@@ -62,7 +62,7 @@ public class RegistrationController {
      *
      * @return list of registrations visible to the current user
      */
-    @PreAuthorize("hasAnyRole('ADMIN','ORGANIZER','STAFF')")
+    @PreAuthorize("hasAnyRole('ADMIN','ORGANIZER','STAFF', 'PARTICIPANT')")
     @GetMapping
     public List<Registration> getAllRegistrations() {
         return registrationService.getAllRegistrations();
