@@ -2,6 +2,9 @@ package com.example.demo.controller;
 
 import java.util.List;
 
+import org.springframework.security.core.Authentication;
+import org.springframework.http.HttpStatus;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -60,7 +63,34 @@ public class ParticipantController {
     public ResponseEntity<List<Participant>> getAllParticipants() {
         return ResponseEntity.ok(participantService.getAllParticipants());
     }
+    
+    //methods for front end use case
+    @PreAuthorize("hasRole('PARTICIPANT')")
+    @GetMapping("/me")
+    public ResponseEntity<Participant> getMyParticipant(Authentication authentication) {
+        Participant participant = participantService.getMyParticipant(authentication.getName());
+        return ResponseEntity.ok(participant);
+    }
 
+    @PreAuthorize("hasRole('PARTICIPANT')")
+    @PostMapping("/me")
+    public ResponseEntity<Participant> createMyParticipant(
+            Authentication authentication,
+            @Valid @RequestBody Participant participant) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(participantService.createMyParticipant(authentication.getName(), participant));
+    }
+
+    @PreAuthorize("hasRole('PARTICIPANT')")
+    @PutMapping("/me")
+    public ResponseEntity<Participant> updateMyParticipant(
+            Authentication authentication,
+            @RequestBody Participant updatedParticipant) {
+        return ResponseEntity.ok(
+                participantService.updateMyParticipant(authentication.getName(), updatedParticipant)
+        );
+    }
+    
     /**
      * Retrieves a participant by their ID.
      * 
