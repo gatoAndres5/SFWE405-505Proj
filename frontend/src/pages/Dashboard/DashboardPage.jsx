@@ -258,9 +258,7 @@ export default function DashboardPage() {
           .filter(Boolean)
           .filter((event) => new Date(event.startDateTime) > now)
           .filter((event) => event.registrationStatus !== "CANCELLED")
-          .sort(
-            (a, b) => new Date(a.startDateTime) - new Date(b.startDateTime)
-          );
+          .sort((a, b) => new Date(a.startDateTime) - new Date(b.startDateTime));
 
         setDashboardData({
           registrations,
@@ -275,7 +273,16 @@ export default function DashboardPage() {
         });
       } catch (err) {
         console.error(err);
-        setError("Failed to load participant dashboard data.");
+
+        if (err.response?.status === 400) {
+          setError(
+            "Please complete your participant profile on the Participants page before viewing your dashboard."
+          );
+        } else if (err.response?.status === 403) {
+          setError("You are not authorized to view participant dashboard data.");
+        } else {
+          setError("Failed to load participant dashboard data.");
+        }
       } finally {
         setLoading(false);
       }
