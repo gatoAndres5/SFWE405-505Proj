@@ -110,7 +110,13 @@ public class VenueControllerTest {
             .contentType(MediaType.APPLICATION_JSON)
             .bodyValue(Map.of(
                 "name", "Grand Ballroom",
-                "address", "456 Event Ave",
+                "address", Map.of(
+                    "street", "456 Event Ave",
+                    "city", "Test City",
+                    "state", "Test State",
+                    "zipCode", "12345",
+                    "country", "Test Country"
+                ),
                 "capacity", 200,
                 "contactName", "Jane Manager",
                 "contactEmail", "jane@venue.com",
@@ -186,7 +192,13 @@ public class VenueControllerTest {
             .contentType(MediaType.APPLICATION_JSON)
             .bodyValue(Map.of(
                 "name", "Updated Venue Name",
-                "address", "789 New Street",
+                "address", Map.of(
+                    "street", "789 New Street",
+                    "city", "Test City",
+                    "state", "Test State",
+                    "zipCode", "12345",
+                    "country", "Test Country"
+                ),
                 "capacity", 150,
                 "contactName", "Updated Manager",
                 "contactEmail", "updated@venue.com",
@@ -309,7 +321,13 @@ public class VenueControllerTest {
             .contentType(MediaType.APPLICATION_JSON)
             .bodyValue(Map.of(
                 "name", "Unauthorized Venue",
-                "address", "123 Test St",
+                "address", Map.of(
+                    "street", "123 Test St",
+                    "city", "Test City",
+                    "state", "Test State",
+                    "zipCode", "12345",
+                    "country", "Test Country"
+                ),
                 "capacity", 50,
                 "contactName", "Test Manager",
                 "contactEmail", "test@test.com",
@@ -333,7 +351,13 @@ public class VenueControllerTest {
             .contentType(MediaType.APPLICATION_JSON)
             .bodyValue(Map.of(
                 "name", "",  // Empty name
-                "address", "123 Test St",
+                "address", Map.of(
+                    "street", "123 Test St",
+                    "city", "Test City",
+                    "state", "Test State",
+                    "zipCode", "12345",
+                    "country", "Test Country"
+                ),
                 "capacity", -10,  // Invalid capacity
                 "contactName", "Test Manager",
                 "contactEmail", "test@test.com",
@@ -353,21 +377,26 @@ public class VenueControllerTest {
     @DisplayName("PUT /venues/{id} returns 404 when venue not found")
     void updateVenue_shouldReturnNotFound_whenMissing() {
         webTestClient.put()
-            .uri("/venues/{id}", 999999)
+            .uri("/venues/{id}", 99999L)  // Non-existent ID
             .contentType(MediaType.APPLICATION_JSON)
             .bodyValue(Map.of(
                 "name", "Updated Name",
-                "address", "Updated Address",
+                "address", Map.of(
+                    "street", "Updated Address",
+                    "city", "Test City",
+                    "state", "Test State",
+                    "zipCode", "12345",
+                    "country", "Test Country"
+                ),
                 "capacity", 100,
                 "contactName", "Updated Manager",
                 "contactEmail", "updated@test.com",
-                "contactPhone", "555-9999"
+                "contactPhone", "555-0000"
             ))
             .header(HttpHeaders.AUTHORIZATION, "Bearer " + adminToken)
             .exchange()
             .expectStatus().isNotFound();
     }
-
     /**
      * TEST 14: Availability check with invalid time range (400 Bad Request)
      * DEMONSTRATES: Validation works for time parameters
