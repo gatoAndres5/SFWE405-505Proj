@@ -26,7 +26,6 @@ public class VendorController {
         this.vendorService = vendorService;
     }
 
-    // create a new vendor
     @PreAuthorize("hasAnyRole('ADMIN', 'ORGANIZER')")
     @PostMapping
     public Vendor createVendor(@RequestBody Vendor vendor) {
@@ -34,7 +33,6 @@ public class VendorController {
         return newVendor;
     }
 
-    // get all vendors, all roles can see this
     @PreAuthorize("hasAnyRole('ADMIN', 'ORGANIZER', 'STAFF', 'PARTICIPANT')")
     @GetMapping
     public List<Vendor> getAllVendors() {
@@ -42,7 +40,6 @@ public class VendorController {
         return vendorList;
     }
 
-    // get a specific vendor by id
     @PreAuthorize("hasAnyRole('ADMIN', 'ORGANIZER', 'STAFF', 'PARTICIPANT')")
     @GetMapping("/{id}")
     public Vendor getVendorById(@PathVariable Long id) {
@@ -50,7 +47,6 @@ public class VendorController {
         return vendor;
     }
 
-    // update an existing vendor
     @PreAuthorize("hasAnyRole('ADMIN', 'ORGANIZER')")
     @PutMapping("/{id}")
     public Vendor updateVendor(@PathVariable Long id, @RequestBody Vendor updatedVendor) {
@@ -58,7 +54,6 @@ public class VendorController {
         return vendor;
     }
 
-    // deactivate a vendor
     @PreAuthorize("hasAnyRole('ADMIN', 'ORGANIZER')")
     @PatchMapping("/{id}/deactivate")
     public Vendor deactivateVendor(@PathVariable Long id) {
@@ -66,7 +61,6 @@ public class VendorController {
         return vendor;
     }
 
-    // delete a vendor, admin only
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public void deleteVendor(@PathVariable Long id) {
