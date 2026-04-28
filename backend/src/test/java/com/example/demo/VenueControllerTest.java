@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import java.time.LocalDateTime;
 import java.util.Map;
 
+import com.example.demo.entity.Address;
 import com.example.demo.entity.User;
 import com.example.demo.entity.UserRole;
 import com.example.demo.entity.Venue;
@@ -41,13 +42,15 @@ public class VenueControllerTest {
     private Venue savedVenue;
 
     private Venue createTestVenue() {
+        Address address = new Address("123 Test Street", "Test City", "Test State", "12345", "Test Country");
         Venue venue = new Venue(
             "Test Venue",
-            "123 Test Street",
+            address,
             100,
             "John Manager",
-            "555-1234",
-            "manager@test.com");
+            "john@example.com",
+            "555-1234"
+        );
         return venueRepository.save(venue);
     }
 

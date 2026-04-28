@@ -79,20 +79,6 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiError> handleGeneralException(
-            Exception ex,
-            HttpServletRequest request
-    ) {
-        ApiError body = new ApiError(
-                Instant.now().toString(),
-                400,
-                ex.getMessage(),
-                request.getRequestURI()
-        );
-        return ResponseEntity.status(400).body(body);
-    }
-
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiError> handleGeneralException(
                 Exception ex,
                 HttpServletRequest request
         ) {
