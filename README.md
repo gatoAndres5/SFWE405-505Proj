@@ -1,5 +1,5 @@
 
-# SFWE405-505Proj
+# SFWE405-505Project
 
 Event Planning & Coordination Platform  
 **Phase 2: Secure Backend with Validation, Business Rules, and Testing**
