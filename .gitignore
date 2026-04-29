@@ -33,4 +33,5 @@ build/
 .vscode/
 *.Identifier
 .mvn/
-.envvideos/
+.env
+videos/
