@@ -69,36 +69,33 @@ export default function VenuesPage() {
   const fetchUserVenues = async () => {
     try {
       setLoading(true);
-      // For participants, fetch venues from events they're registered/assigned to
-      const eventsResponse = await axios.get(`${API_BASE}/events/my-events`, {
+      // For participants, fetch events they're registered/assigned to
+      const eventsResponse = await axios.get(`${API_BASE}/events`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
       const userEvents = eventsResponse.data;
-      const userVenueIds = new Set();
+      const userVenues = [];
       
-      userEvents.forEach(event => {
-        if (event.venues) {
-          event.venues.forEach(venue => {
-            userVenueIds.add(venue.venueId);
+      // For each event, fetch its venues
+      for (const event of userEvents) {
+        try {
+          const venuesResponse = await axios.get(`${API_BASE}/events/${event.id}/venues`, {
+            headers: { Authorization: `Bearer ${token}` }
           });
+          
+          userVenues.push(...venuesResponse.data);
+        } catch (venueError) {
+          console.error(`Error fetching venues for event ${event.id}:`, venueError);
         }
-      });
-      
-      // Fetch venue details for the venues user has access to
-      if (userVenueIds.size > 0) {
-        const venuesResponse = await axios.get(`${API_BASE}/venues/list`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        
-        const userVenues = venuesResponse.data.filter(venue => 
-          userVenueIds.has(venue.venueId)
-        );
-        
-        setVenues(userVenues);
-      } else {
-        setVenues([]);
       }
+      
+      // Remove duplicates by venue ID
+      const uniqueVenues = userVenues.filter((venue, index, self) =>
+        index === self.findIndex((v) => v.id === venue.id)
+      );
+      
+      setVenues(uniqueVenues);
     } catch (error) {
       setError('Failed to fetch your venues');
       console.error('Error fetching user venues:', error);
