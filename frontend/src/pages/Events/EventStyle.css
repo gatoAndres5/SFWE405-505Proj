@@ -1,0 +1,161 @@
+.page {
+  min-height: 100vh;
+  background: #0f172a;
+  color: white;
+  padding: 24px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.title {
+  font-size: 28px;
+  font-weight: 600;
+}
+
+.tabBar {
+  display: flex;
+  gap: 14px;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+.tab {
+  padding: 10px 16px;
+  border-radius: 10px;
+  background: transparent;
+  color: #94a3b8;
+  border: none;
+  cursor: pointer;
+}
+
+.tabActive {
+  background: #1e293b;
+  color: white;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.card {
+  background: #1e293b;
+  padding: 16px;
+  border-radius: 12px;
+}
+
+.cardTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.badge {
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: #334155;
+  color: white;
+}
+
+.badge-active {
+  background: #16a34a;
+}
+
+.badge-cancelled {
+  background: #dc2626;
+}
+
+.badge-draft {
+  background: #64748b;
+}
+
+.desc {
+  color: #cbd5e1;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.assignBox {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.primaryBtn {
+  background: #6366f1;
+  color: white;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.secondaryBtn {
+  background: #334155;
+  color: white;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.dangerBtn {
+  background: #ef4444;
+  color: white;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.editor {
+  margin-top: 20px;
+  padding: 16px;
+  background: #1e293b;
+  border-radius: 12px;
+}
+
+.input {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 10px;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #334155;
+  background: #0f172a;
+  color: white;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+  gap: 10px;
+}
+
+.error {
+  background: #7f1d1d;
+  color: white;
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+
+.muted {
+  color: #94a3b8;
+}

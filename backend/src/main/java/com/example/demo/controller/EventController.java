@@ -16,28 +16,37 @@ import com.example.demo.entity.ScheduleItem;
 import com.example.demo.entity.Vendor;
 import com.example.demo.entity.Venue;
 import com.example.demo.service.EventService;
+import com.example.demo.entity.UserRole;
+import java.security.Principal;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
+
+import com.example.demo.entity.User;
+import com.example.demo.entity.EventAssignment.EventAssignmentRole;
+import com.example.demo.repository.UserRepository;
 /**
- * REST controller for managing Event entities and their related resources.
- *
- * Provides endpoints for creating, retrieving, updating, and canceling events,
- * as well as managing associated venues and schedule items.
+ * REST controller to manage events.
+ * Provides endpoints for creating, retrieving, 
+ * updating and managing event-related resources 
+ * like venues, vendors, participants, and 
+ * schedule items.
  */
 @RestController
 @RequestMapping("/events")
 public class EventController {
 
     private final EventService eventService;
+    private final UserRepository userRepository;
 
     /**
-     * Constructs an EventController with the required service dependency.
-     *
-     * @param eventService service handling event operations
+     * Constructs an EventController with the given service.
+     * @param eventService Service used to handle event operations.
      */
-    public EventController(EventService eventService) {
+    public EventController(EventService eventService, UserRepository userRepository) {
         this.eventService = eventService;
+        this.userRepository = userRepository;
     }
-
     /**
      * Request body for creating a new event.
      */
@@ -54,11 +63,26 @@ public class EventController {
         @NotNull
         public LocalDateTime endDateTime;
     }
+    /**
+     * Retrieves the current user from the security context.
+     * @param principal The security principal representing the authenticated user
+     * @return Return the authenticated user object.
+     * @throws ResponseStatusException if the user is not authenticated or it cannot be found
+     */
+    private User getCurrentUser(Principal principal) {
+        if (principal == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User is not authenticated");
+        }
 
+        return userRepository.findByUsername(principal.getName())
+            .orElseThrow(() -> new ResponseStatusException(
+                HttpStatus.UNAUTHORIZED,
+                "Authenticated user not found"
+            ));
+    }
     /**
      * Request body for updating an existing event.
-     *
-     * All fields are optional and may be provided selectively.
+     * All fields are optional.
      */
     public static class EventUpdateRequest {
         public String name;
@@ -66,47 +90,48 @@ public class EventController {
         public LocalDateTime startDateTime;
         public LocalDateTime endDateTime;
     }
-
     /**
      * Creates a new event.
-     *
-     * Allowed Roles: ADMIN, ORGANIZER
-     *
-     * @param request request containing event name, description, start date/time,
-     *                and end date/time
-     * @return the created Event
+     * Accesible to admin role or event organizer.
+     * 
+     * @param principal The security principal representing the authenticated user
+     * @param request Request the event details
+     * @return Return event.
+     * @throws ResponseStatusException if the user is not authenticated or it cannot be found
      */
     @PreAuthorize("hasAnyRole('ADMIN', 'ORGANIZER')")
     @PostMapping
-    public Event createEvent(@Valid @RequestBody EventRequest request) {
+    public Event createEvent(
+        Principal principal,
+        @Valid @RequestBody EventRequest request
+    ) {
+        User currentUser = getCurrentUser(principal);
+
         return eventService.createEvent(
+            currentUser,
             request.name,
             request.description,
             request.startDateTime,
             request.endDateTime
         );
     }
-
     /**
-     * Retrieves all events in the system.
-     *
-     * Allowed Roles: Any authenticated user
-     *
-     * @return list of all events
+     * Retrieves a list of events accesible to the authenticated user.
+     * @param principal The security principal representing the authenticated user
+     * @return Return list of events the user is allowed to view.
      */
     @PreAuthorize("isAuthenticated()")
     @GetMapping
-    public List<Event> getAllEvents() {
-        return eventService.getAllEvents();
+    public List<Event> getAllEvents(Principal principal) {
+        User currentUser = getCurrentUser(principal);
+        return eventService.getEventsForUser(currentUser);
     }
 
     /**
-     * Retrieves a specific event by ID.
-     *
-     * Allowed Roles: Any authenticated user
-     *
-     * @param eventId event ID
-     * @return the matching Event
+     * Retrieves an event by its ID.
+     * 
+     * @param eventId ID of an event
+     * @return  Return the requested event
      */
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/{eventId}")
@@ -115,22 +140,24 @@ public class EventController {
     }
 
     /**
-     * Updates an existing event's details.
-     *
-     * Allowed Roles: ADMIN
-     *
-     * @param eventId event ID
-     * @param request request containing updated event fields
-     * @return the updated Event
+     * Updates an existing event if the user is admin or an event organizer.
+     * @param principal The security principal representing the authenticated user
+     * @param eventId ID of event
+     * @param request Updated event data
+     * @return Return the updated event
      */
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ORGANIZER')")
     @PutMapping("/{eventId}")
     public Event updateEvent(
+        Principal principal,
         @PathVariable Long eventId,
         @RequestBody EventUpdateRequest request
     ) {
+        User currentUser = getCurrentUser(principal);
+
         return eventService.updateEventDetails(
             eventId,
+            currentUser,
             request.name,
             request.description,
             request.startDateTime,
@@ -139,27 +166,42 @@ public class EventController {
     }
 
     /**
-     * Cancels an event.
-     *
-     * Allowed Roles: ADMIN
-     *
-     * @param eventId event ID
-     * @return the canceled Event
+     * Cancels an event if the authenticated user is an admin or an event organizer.
+     * @param principal The security principal representing the authenticated user
+     * @param eventId ID of event
+     * @return Return the cancelled event
      */
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ORGANIZER')")
     @PutMapping("/{eventId}/cancel")
-    public Event cancelEvent(@PathVariable Long eventId) {
-        return eventService.cancelEvent(eventId);
+    public Event cancelEvent(
+        Principal principal,
+        @PathVariable Long eventId
+    ) {
+        User currentUser = getCurrentUser(principal);
+        return eventService.cancelEvent(eventId, currentUser);
     }
-
+    
     /**
-     * Adds a venue to an event.
-     *
-     * Allowed Roles: ADMIN
-     *
-     * @param eventId event ID
-     * @param venueId venue ID
-     * @return the updated Event
+     * Activates event if the request is made by an admin or an event organizer
+     * @param principal The security principal representing the authenticated user
+     * @param eventId ID of event
+     * @return Return activated event.
+     */
+    @PreAuthorize("hasAnyRole('ADMIN', 'ORGANIZER')")
+    @PutMapping("/{eventId}/activate")
+    public Event activateEvent(
+        Principal principal,
+        @PathVariable Long eventId
+    ) {
+        User currentUser = getCurrentUser(principal);
+        return eventService.activateEvent(eventId, currentUser);
+    }
+    /**
+     * Adds a venue to event.
+     * 
+     * @param eventId ID of event
+     * @param venueId ID of venue
+     * @return Return updated event
      */
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/{eventId}/venues/{venueId}")
@@ -171,13 +213,10 @@ public class EventController {
     }
 
     /**
-     * Removes a venue from an event.
-     *
-     * Allowed Roles: ADMIN
-     *
-     * @param eventId event ID
-     * @param venueId venue ID
-     * @return the updated Event
+     * Removes a venue from event.
+     * @param eventId ID of event
+     * @param venueId ID of venue
+     * @return Return updated event
      */
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{eventId}/venues/{venueId}")
@@ -188,32 +227,29 @@ public class EventController {
         return eventService.removeVenueFromEvent(eventId, venueId);
     }
 
-    /**
-     * Adds a schedule item to an event.
-     *
-     * Allowed Roles: ADMIN
-     *
-     * @param eventId event ID
-     * @param item schedule item to add
-     * @return the updated Event
-     */
-    @PreAuthorize("hasRole('ADMIN')")
+     /**
+      * Adds a schedule item to event if the authenitcated user is admin or event organizer or event staff
+      * @param principal The security principal representing the authenticated user
+      * @param eventId ID of event
+      * @param item Item to add
+      * @return Return updated event
+      */
+    @PreAuthorize("hasAnyRole('ADMIN', 'ORGANIZER', 'STAFF')")
     @PostMapping("/{eventId}/schedule")
     public Event addScheduleItem(
+        Principal principal,
         @PathVariable Long eventId,
         @RequestBody ScheduleItem item
     ) {
-        return eventService.addScheduleItem(eventId, item);
+        User currentUser = getCurrentUser(principal);
+        return eventService.addScheduleItem(eventId, currentUser, item);
     }
-
     /**
-     * Removes a schedule item from an event.
-     *
-     * Allowed Roles: ADMIN
-     *
-     * @param eventId event ID
-     * @param scheduleItemId schedule item ID
-     * @return the updated Event
+     * Remove a schedule item in event
+     * 
+     * @param eventId ID of event
+     * @param scheduleItemId Item to remove
+     * @return Return updated event
      */
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{eventId}/schedule/{scheduleItemId}")
@@ -225,12 +261,10 @@ public class EventController {
     }
 
     /**
-     * Retrieves all participants registered for an event.
-     *
-     * Allowed Roles: Any authenticated user
-     *
-     * @param eventId event ID
-     * @return list of participants for the event
+     * Retrieves all participants from an event
+     * 
+     * @param eventId ID of event
+     * @return Return list of all participants in event with eventId
      */
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/{eventId}/participants")
@@ -239,12 +273,10 @@ public class EventController {
     }
 
     /**
-     * Retrieves all vendors associated with an event.
-     *
-     * Allowed Roles: Any authenticated user
-     *
-     * @param eventId event ID
-     * @return list of vendors for the event
+     * Retrieves all vendors for an event.
+     * 
+     * @param eventId ID of event
+     * @return Return list of all vendors in event with eventId 
      */
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/{eventId}/vendors")
@@ -253,12 +285,10 @@ public class EventController {
     }
 
     /**
-     * Retrieves all venues associated with an event.
-     *
-     * Allowed Roles: Any authenticated user
-     *
-     * @param eventId event ID
-     * @return list of venues for the event
+     * Retrieves all venues for event.
+     * 
+     * @param eventId ID of event
+     * @return Return list of all venues for event with eventId
      */
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/{eventId}/venues")
@@ -267,16 +297,116 @@ public class EventController {
     }
 
     /**
-     * Retrieves all schedule items associated with an event.
-     *
-     * Allowed Roles: Any authenticated user
-     *
-     * @param eventId event ID
-     * @return list of schedule items for the event
+     * Retrieves all schedule items for event.
+     * @param eventId ID of event
+     * @return Return list of all schedule items for event with eventId
      */
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/{eventId}/scheduleitems")
     public List<ScheduleItem> listScheduleItems(@PathVariable Long eventId) {
         return eventService.listEventScheduledItems(eventId);
+    }
+
+    /**
+     * Allows admin to assign an organizer with their userID.
+     * @param principal The security principal representing the authenticated user
+     * @param eventId ID of event to which an organizer will be assigned.
+     * @param userId User ID of the organizer.
+     * @return Return event with new organizer.
+     * @throws ResponseStatusException if the user is not found.
+     */
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/{eventId}/assign/organizer/{userId}")
+    public Event assignOrganizer(
+        Principal principal,
+        @PathVariable Long eventId,
+        @PathVariable Long userId
+    ) {
+        User currentUser = getCurrentUser(principal);
+
+        User assignedUser = userRepository.findById(userId)
+            .orElseThrow(() -> new ResponseStatusException(
+                HttpStatus.NOT_FOUND,
+                "User not found, id: " + userId
+            ));
+
+        return eventService.assignUserToEvent(
+            eventId,
+            assignedUser,
+            currentUser,
+            EventAssignmentRole.ORGANIZER
+        );
+    }
+
+    /**
+     * Allows admin or event organizer to assign staff to an event. 
+     * @param principal The security principal representing the authenticated user
+     * @param eventId ID of event to which staff will be added to
+     * @param userId User ID of the staff that will be added to an event.
+     * @return Return event with new staff
+     * @throws ResponseStatusException if the user is not found.
+     */
+    @PreAuthorize("hasAnyRole('ADMIN', 'ORGANIZER')")
+    @PostMapping("/{eventId}/assign/staff/{userId}")
+    public Event assignStaff(
+        Principal principal,
+        @PathVariable Long eventId,
+        @PathVariable Long userId
+    ) {
+        User currentUser = getCurrentUser(principal);
+
+        User assignedUser = userRepository.findById(userId)
+            .orElseThrow(() -> new ResponseStatusException(
+                HttpStatus.NOT_FOUND,
+                "User not found, id: " + userId
+            ));
+
+        return eventService.assignUserToEvent(
+            eventId,
+            assignedUser,
+            currentUser,
+            EventAssignmentRole.STAFF
+        );
+    }
+
+    /**
+     * DTO representing a simplified user.
+     * Used for frontend dropdown menu.
+     */
+    public static class UserOption {
+        public Long id;
+        public String username;
+
+        public UserOption(User user) {
+            this.id = user.getId();
+            this.username = user.getUsername();
+        }
+    }
+    
+    /**
+     * Retrives a list of users with the organizer role
+     * Used for frontend dropdown menu.
+     * @return Returns list of organizers
+     */
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/organizers")
+    public List<UserOption> getOrganizers() {
+        return userRepository.findAll().stream()
+            .filter(user -> user.getRole() == UserRole.ORGANIZER)
+            .map(UserOption::new)
+            .toList();
+    }
+    /**
+     * Retrieves a list of users with the staff role
+     * Used for frontend dropdown menu
+     * @return Returns a list of staff
+     */
+    @PreAuthorize("hasAnyRole('ADMIN','ORGANIZER')")
+    @GetMapping("/staff")
+    public List<UserOption> getStaff() {
+        return userRepository.findAll().stream()
+            .filter(user -> user.getRole() == UserRole.STAFF)
+            .map(UserOption::new)
+            .toList();
     }
 }
