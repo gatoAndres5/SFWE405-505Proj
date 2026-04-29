@@ -19,6 +19,8 @@ export default function EventsPage() {
 
   const [organizerUserId, setOrganizerUserId] = useState("");
   const [staffUserId, setStaffUserId] = useState("");
+  const [organizers, setOrganizers] = useState([]);
+  const [staffUsers, setStaffUsers] = useState([])
 
   const [form, setForm] = useState({
     name: "",
@@ -43,6 +45,31 @@ export default function EventsPage() {
     }
   };
 
+
+  const fetchAssignableUsers = async () => {
+    try {
+      if (isAdmin) {
+        const organizerRes = await axios.get(
+          "http://localhost:8080/events/organizers",
+          config
+        );
+        setOrganizers(organizerRes.data);
+      }
+
+      if (canManageEvents) {
+        const staffRes = await axios.get(
+          "http://localhost:8080/events/staff",
+          config
+        );
+        setStaffUsers(staffRes.data);
+      }
+    } catch (e) {
+      console.error(e);
+      setError("Failed to load assignable users");
+    }
+  };
+
+
   const role = getRole();
   const isAdmin = role === "ADMIN";
   const isOrganizer = role === "ORGANIZER";
@@ -51,6 +78,7 @@ export default function EventsPage() {
   const config = {
     headers: { Authorization: `Bearer ${token}` },
   };
+
 
   const fetchEvents = async () => {
     try {
@@ -67,6 +95,7 @@ export default function EventsPage() {
 
   useEffect(() => {
     fetchEvents();
+    fetchAssignableUsers();
   }, []);
 
   const filteredEvents = events.filter((e) => {
@@ -331,12 +360,18 @@ export default function EventsPage() {
                 <>
                   <h4>Assign Organizer</h4>
                   <div className="assignBox">
-                    <input
+                    <select
                       className="input"
-                      placeholder="Organizer user ID"
                       value={organizerUserId}
                       onChange={(e) => setOrganizerUserId(e.target.value)}
-                    />
+                    >
+                      <option value="">Select Organizer</option>
+                      {organizers.map((u) => (
+                        <option key={u.id} value={u.id}>
+                          {u.username}
+                        </option>
+                      ))}
+                    </select>
                     <button
                       className="primaryBtn"
                       onClick={() => assignOrganizer(selectedEvent.id)}
@@ -349,12 +384,18 @@ export default function EventsPage() {
 
               <h4>Assign Staff</h4>
               <div className="assignBox">
-                <input
+                <select
                   className="input"
-                  placeholder="Staff user ID"
                   value={staffUserId}
                   onChange={(e) => setStaffUserId(e.target.value)}
-                />
+                >
+                  <option value="">Select Staff</option>
+                  {staffUsers.map((u) => (
+                    <option key={u.id} value={u.id}>
+                      {u.username}
+                    </option>
+                  ))}
+                </select>
                 <button
                   className="primaryBtn"
                   onClick={() => assignStaff(selectedEvent.id)}

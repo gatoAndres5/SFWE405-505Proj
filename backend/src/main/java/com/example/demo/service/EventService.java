@@ -467,13 +467,19 @@ public class EventService {
         }
     }
     /**
-     * Returns all events for admin, and only assigned events for other types of user 
+     * Returns all events for admin, only active events for participant, and for staff and organizer, only events they are assigned to
      * @param user The user requesting the event
      * @return Return list of events
      */
     public List<Event> getEventsForUser(User user) {
         if (isAdmin(user)) {
             return eventRepository.findAll();
+        }
+
+        if (user.getRole() == UserRole.PARTICIPANT) {
+            return eventRepository.findAll().stream()
+                .filter(event -> event.getStatus() == EventStatus.ACTIVE)
+                .toList();
         }
 
         return eventRepository.findAll().stream()

@@ -16,7 +16,7 @@ import com.example.demo.entity.ScheduleItem;
 import com.example.demo.entity.Vendor;
 import com.example.demo.entity.Venue;
 import com.example.demo.service.EventService;
-
+import com.example.demo.entity.UserRole;
 import java.security.Principal;
 
 import org.springframework.http.HttpStatus;
@@ -367,5 +367,46 @@ public class EventController {
             currentUser,
             EventAssignmentRole.STAFF
         );
+    }
+
+    /**
+     * DTO representing a simplified user.
+     * Used for frontend dropdown menu.
+     */
+    public static class UserOption {
+        public Long id;
+        public String username;
+
+        public UserOption(User user) {
+            this.id = user.getId();
+            this.username = user.getUsername();
+        }
+    }
+    
+    /**
+     * Retrives a list of users with the organizer role
+     * Used for frontend dropdown menu.
+     * @return Returns list of organizers
+     */
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/organizers")
+    public List<UserOption> getOrganizers() {
+        return userRepository.findAll().stream()
+            .filter(user -> user.getRole() == UserRole.ORGANIZER)
+            .map(UserOption::new)
+            .toList();
+    }
+    /**
+     * Retrieves a list of users with the staff role
+     * Used for frontend dropdown menu
+     * @return Returns a list of staff
+     */
+    @PreAuthorize("hasAnyRole('ADMIN','ORGANIZER')")
+    @GetMapping("/staff")
+    public List<UserOption> getStaff() {
+        return userRepository.findAll().stream()
+            .filter(user -> user.getRole() == UserRole.STAFF)
+            .map(UserOption::new)
+            .toList();
     }
 }
