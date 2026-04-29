@@ -50,7 +50,7 @@ export default function Sidebar({ onLogout }) {
     <aside className="sidebar">
       <div>
         <div className="sidebar-brand">
-          <h2>Smart Event System</h2>
+          <h2>Event Planning System</h2>
           <p>Event Management</p>
         </div>
 
