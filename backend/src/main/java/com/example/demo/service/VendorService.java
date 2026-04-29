@@ -45,6 +45,10 @@ public class VendorService {
         if (vendor.getContactEmail() == null || vendor.getContactEmail().equals("")) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Contact email is required.");
         }
+        // check that contact email format is valid
+        if (!vendor.getContactEmail().matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid contact email format.");
+        }
 
         // check that contact phone is provided
         if (vendor.getContactPhone() == null || vendor.getContactPhone().equals("")) {
@@ -123,6 +127,10 @@ public class VendorService {
         // check that vendor name is provided
         if (updatedVendor.getName() == null || updatedVendor.getName().equals("")) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vendor name is required.");
+        }
+        // check that contact email format is valid
+        if (!vendor.getContactEmail().matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid contact email format.");
         }
 
         // check if the email was changed and if the new email is already taken
