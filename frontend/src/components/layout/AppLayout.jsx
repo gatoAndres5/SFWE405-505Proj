@@ -41,7 +41,7 @@ export default function AppLayout({ children, onLogout }) {
         <header className="topbar">
           <div>
             <h1>{pageTitle}</h1>
-            <p>Manage your application data from this section.</p>
+            <p>View and manage {pageTitle.toLowerCase()} in the system.</p>
           </div>
         </header>
 
