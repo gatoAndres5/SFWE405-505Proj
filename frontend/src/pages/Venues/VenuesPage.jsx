@@ -5,8 +5,6 @@ import "./Venues.css";
 const API_BASE = "http://localhost:8080";
 
 export default function VenuesPage() {
-  console.log('VenuesPage component mounted!');
-  
   const [venues, setVenues] = useState([]);
   const [events, setEvents] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState(null);
@@ -17,19 +15,37 @@ export default function VenuesPage() {
 
   const token = localStorage.getItem("token");
 
+  // Get user role from token
+  const getUserRole = () => {
+    if (!token) return "";
+    try {
+      const payload = JSON.parse(atob(token.split(".")[1]));
+      return payload.role || payload.authority || "";
+    } catch {
+      return "";
+    }
+  };
+
+  const userRole = getUserRole();
+  const isAdmin = userRole === "ADMIN" || userRole === "ROLE_ADMIN";
+  const isOrganizer = userRole === "ORGANIZER" || userRole === "ROLE_ORGANIZER";
+  const canManageVenues = isAdmin || isOrganizer;
+
   useEffect(() => {
-    fetchVenues();
-    fetchEvents();
+    if (canManageVenues) {
+      fetchVenues();
+      fetchEvents();
+    } else {
+      fetchUserVenues();
+    }
   }, []);
 
   const fetchVenues = async () => {
     try {
       setLoading(true);
-      console.log('Fetching venues with token:', token);
       const response = await axios.get(`${API_BASE}/venues/list`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      console.log('Venues response:', response.data);
       setVenues(response.data);
     } catch (error) {
       setError('Failed to fetch venues');
@@ -47,6 +63,47 @@ export default function VenuesPage() {
       setEvents(response.data.filter(event => event.status === 'DRAFT' || event.status === 'ACTIVE'));
     } catch (error) {
       console.error('Error fetching events:', error);
+    }
+  };
+
+  const fetchUserVenues = async () => {
+    try {
+      setLoading(true);
+      // For participants, fetch venues from events they're registered/assigned to
+      const eventsResponse = await axios.get(`${API_BASE}/events/my-events`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      const userEvents = eventsResponse.data;
+      const userVenueIds = new Set();
+      
+      userEvents.forEach(event => {
+        if (event.venues) {
+          event.venues.forEach(venue => {
+            userVenueIds.add(venue.venueId);
+          });
+        }
+      });
+      
+      // Fetch venue details for the venues user has access to
+      if (userVenueIds.size > 0) {
+        const venuesResponse = await axios.get(`${API_BASE}/venues/list`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        
+        const userVenues = venuesResponse.data.filter(venue => 
+          userVenueIds.has(venue.venueId)
+        );
+        
+        setVenues(userVenues);
+      } else {
+        setVenues([]);
+      }
+    } catch (error) {
+      setError('Failed to fetch your venues');
+      console.error('Error fetching user venues:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -99,21 +156,17 @@ export default function VenuesPage() {
   };
 
   const activeVenues = venues;
-  console.log('Active venues:', activeVenues);
-  console.log('Venues state:', venues);
 
   return (
     <div className="venues-page">
       <div className="content-card">
-        <h1>Venue Management</h1>
-        <p>Assign venues to events and manage venue availability</p>
-        
-        {/* Debug Info */}
-        <div style={{background: '#1e293b', padding: '10px', margin: '10px 0', borderRadius: '8px'}}>
-          <p style={{color: '#f8fafc', margin: '5px 0'}}>Debug: Venues count: {venues.length}</p>
-          <p style={{color: '#f8fafc', margin: '5px 0'}}>Debug: Loading: {loading.toString()}</p>
-          <p style={{color: '#f8fafc', margin: '5px 0'}}>Debug: Token exists: {!!token}</p>
-        </div>
+        <h1>{canManageVenues ? "Venue Management" : "My Venues"}</h1>
+        <p>
+          {canManageVenues 
+            ? "Assign venues to events and manage venue availability" 
+            : "Venues for events you are registered for or assigned to"
+          }
+        </p>
 
         {message && (
           <div className="success-message">{message}</div>
@@ -123,7 +176,8 @@ export default function VenuesPage() {
           <div className="error-message">{error}</div>
         )}
 
-        <div className="venue-assignment-section">
+        {canManageVenues && (
+          <div className="venue-assignment-section">
           <h2>Assign Venue to Event</h2>
           
           <div className="form-row">
@@ -181,12 +235,13 @@ export default function VenuesPage() {
             </div>
           )}
         </div>
+        )}
 
         <div className="venues-list-section">
           <h2>Active Venues</h2>
           {loading ? (
             <div className="loading">Loading venues...</div>
-          ) : (
+          ) : activeVenues.length > 0 ? (
             <div className="venues-grid">
               {activeVenues.map(venue => (
                 <div key={venue.id} className="venue-card">
@@ -200,6 +255,15 @@ export default function VenuesPage() {
                   </div>
                 </div>
               ))}
+            </div>
+          ) : (
+            <div className="no-venues">
+              <p>
+                {canManageVenues 
+                  ? "No venues found. Assign venues to events to see them here." 
+                  : "You haven't been assigned to any events with venues yet."
+                }
+              </p>
             </div>
           )}
         </div>
