@@ -59,7 +59,8 @@ export default function ScheduleItemsPage() {
 
   const token = localStorage.getItem("token");
   const realRole = getRoleFromToken(token);
-  const effectiveRole = previewRole ?? realRole;
+  const realIsAdmin = realRole === "ADMIN" || realRole === "ROLE_ADMIN";
+  const effectiveRole = realIsAdmin && previewRole ? previewRole : realRole;
   const canEdit = canEditForRole(effectiveRole);
 
   useEffect(() => {
@@ -193,32 +194,34 @@ export default function ScheduleItemsPage() {
 
   return (
     <div className="schedule-page">
-      <section className="schedule-section">
-        <h3 className="schedule-section-title">Preview Page As</h3>
-        <div className="schedule-form">
-          <div className="schedule-form-grid">
-            <div className="schedule-form-group">
-              <label className="schedule-label" htmlFor="preview-role-select">
-                Role Preview
-              </label>
-              <select
-                id="preview-role-select"
-                className="schedule-select"
-                value={previewRole ?? ""}
-                onChange={(e) => {
-                  setPreviewRole(e.target.value || null);
-                  setShowForm(false);
-                }}
-              >
-                <option value="">My Real Role ({realRole || "unknown"})</option>
-                {PREVIEW_ROLES.map((r) => (
-                  <option key={r} value={r}>{r}</option>
-                ))}
-              </select>
+      {realIsAdmin && (
+        <section className="schedule-section">
+          <h3 className="schedule-section-title">Preview Page As</h3>
+          <div className="schedule-form">
+            <div className="schedule-form-grid">
+              <div className="schedule-form-group">
+                <label className="schedule-label" htmlFor="preview-role-select">
+                  Role Preview
+                </label>
+                <select
+                  id="preview-role-select"
+                  className="schedule-select"
+                  value={previewRole ?? ""}
+                  onChange={(e) => {
+                    setPreviewRole(e.target.value || null);
+                    setShowForm(false);
+                  }}
+                >
+                  <option value="">My Real Role ({realRole || "unknown"})</option>
+                  {PREVIEW_ROLES.map((r) => (
+                    <option key={r} value={r}>{r}</option>
+                  ))}
+                </select>
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {message && <div className="schedule-message success">{message}</div>}
       {error && <div className="schedule-message error">{error}</div>}
