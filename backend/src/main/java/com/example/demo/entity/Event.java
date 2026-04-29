@@ -200,6 +200,7 @@ public class Event {
         return vendors;
     }
 
+    @JsonIgnore
     public List<Venue> getVenues() {
         return venues;
     }

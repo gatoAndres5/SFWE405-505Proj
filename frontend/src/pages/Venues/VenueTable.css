@@ -1,0 +1,124 @@
+.venue-table-container {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.venue-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+.venue-table th {
+  background: #f8f9fa;
+  color: #333;
+  padding: 12px;
+  text-align: left;
+  font-weight: 600;
+}
+
+.venue-table td {
+  padding: 12px;
+  border-bottom: 1px solid #e9ecef;
+  vertical-align: top;
+}
+
+.venue-table tr:hover {
+  background-color: #f8f9fa;
+}
+
+.venue-table .inactive-row {
+  background-color: #f5f5f5;
+}
+
+.venue-table tr.inactive-row:hover {
+  background-color: #ebebeb;
+}
+
+.status-badge {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.status-badge.active {
+  background-color: #28a745;
+  color: white;
+}
+
+.status-badge.inactive {
+  background-color: #dc3545;
+  color: white;
+}
+
+.status-badge.maintenance {
+  background-color: #ffc107;
+  color: white;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.edit-button {
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.edit-button:hover {
+  background: #0056b3;
+}
+
+.status-button {
+  background: #6c757d;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.status-button:hover {
+  background: #5a6268;
+}
+
+.delete-button {
+  background: #dc3545;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.delete-button:hover {
+  background: #c82333;
+}
+
+.staff-badge {
+  background: #17a2b8;
+  color: white;
+  padding: 2px 6px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.loading {
+  text-align: center;
+  padding: 40px;
+  font-size: 16px;
+  color: #666;
+}

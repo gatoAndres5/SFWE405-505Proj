@@ -67,6 +67,7 @@ public class Venue {
         return venueId;
     }
     
+    @JsonIgnore
     public List<Event> getEvents() {
         return events;
     }
