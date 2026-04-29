@@ -467,7 +467,11 @@ public class EventService {
         }
     }
     /**
+<<<<<<< HEAD
      * Returns all events for admin, only active events for participant, and for staff and organizer, only events they are assigned to
+=======
+     * Returns all events for admin, and only assigned events for other types of user 
+>>>>>>> main
      * @param user The user requesting the event
      * @return Return list of events
      */
@@ -476,12 +480,15 @@ public class EventService {
             return eventRepository.findAll();
         }
 
+<<<<<<< HEAD
         if (user.getRole() == UserRole.PARTICIPANT) {
             return eventRepository.findAll().stream()
                 .filter(event -> event.getStatus() == EventStatus.ACTIVE)
                 .toList();
         }
 
+=======
+>>>>>>> main
         return eventRepository.findAll().stream()
             .filter(event ->
                 event.getAssignments().stream().anyMatch(a ->
