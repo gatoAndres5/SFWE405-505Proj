@@ -19,11 +19,6 @@ import com.example.demo.service.EventService;
 import com.example.demo.entity.UserRole;
 import java.security.Principal;
 
-<<<<<<< HEAD
-=======
-import java.security.Principal;
-
->>>>>>> main
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -373,7 +368,6 @@ public class EventController {
             EventAssignmentRole.STAFF
         );
     }
-<<<<<<< HEAD
 
     /**
      * DTO representing a simplified user.
@@ -415,6 +409,4 @@ public class EventController {
             .map(UserOption::new)
             .toList();
     }
-=======
->>>>>>> main
 }

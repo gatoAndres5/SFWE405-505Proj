@@ -19,11 +19,8 @@ export default function EventsPage() {
 
   const [organizerUserId, setOrganizerUserId] = useState("");
   const [staffUserId, setStaffUserId] = useState("");
-<<<<<<< HEAD
   const [organizers, setOrganizers] = useState([]);
   const [staffUsers, setStaffUsers] = useState([])
-=======
->>>>>>> main
 
   const [form, setForm] = useState({
     name: "",
@@ -48,7 +45,6 @@ export default function EventsPage() {
     }
   };
 
-<<<<<<< HEAD
 
   const fetchAssignableUsers = async () => {
     try {
@@ -74,8 +70,6 @@ export default function EventsPage() {
   };
 
 
-=======
->>>>>>> main
   const role = getRole();
   const isAdmin = role === "ADMIN";
   const isOrganizer = role === "ORGANIZER";
@@ -85,10 +79,6 @@ export default function EventsPage() {
     headers: { Authorization: `Bearer ${token}` },
   };
 
-<<<<<<< HEAD
-
-=======
->>>>>>> main
   const fetchEvents = async () => {
     try {
       setLoading(true);
@@ -104,10 +94,7 @@ export default function EventsPage() {
 
   useEffect(() => {
     fetchEvents();
-<<<<<<< HEAD
     fetchAssignableUsers();
-=======
->>>>>>> main
   }, []);
 
   const filteredEvents = events.filter((e) => {
@@ -372,7 +359,6 @@ export default function EventsPage() {
                 <>
                   <h4>Assign Organizer</h4>
                   <div className="assignBox">
-<<<<<<< HEAD
                     <select
                       className="input"
                       value={organizerUserId}
@@ -385,14 +371,6 @@ export default function EventsPage() {
                         </option>
                       ))}
                     </select>
-=======
-                    <input
-                      className="input"
-                      placeholder="Organizer user ID"
-                      value={organizerUserId}
-                      onChange={(e) => setOrganizerUserId(e.target.value)}
-                    />
->>>>>>> main
                     <button
                       className="primaryBtn"
                       onClick={() => assignOrganizer(selectedEvent.id)}
@@ -405,7 +383,6 @@ export default function EventsPage() {
 
               <h4>Assign Staff</h4>
               <div className="assignBox">
-<<<<<<< HEAD
                 <select
                   className="input"
                   value={staffUserId}
@@ -418,14 +395,6 @@ export default function EventsPage() {
                     </option>
                   ))}
                 </select>
-=======
-                <input
-                  className="input"
-                  placeholder="Staff user ID"
-                  value={staffUserId}
-                  onChange={(e) => setStaffUserId(e.target.value)}
-                />
->>>>>>> main
                 <button
                   className="primaryBtn"
                   onClick={() => assignStaff(selectedEvent.id)}
