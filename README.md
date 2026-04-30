@@ -1,106 +1,217 @@
 
-# SFWE405-505Proj
 
-Event Planning & Coordination Platform  
-**Phase 2: Secure Backend with Validation, Business Rules, and Testing**
+#  SFWE405-505Proj
 
-This phase extends the Phase 1 backend by adding authentication, authorization, validation, business rule enforcement, integration testing, and load testing. The primary focus of this phase is the backend. A frontend has been created, but it is minimal and not the main deliverable for this phase.
+## Event Planning System
 
----
-
-## Overview
-
-The Event Planning & Coordination Platform is a Spring Boot application backed by PostgreSQL.  
-Phase 2 demonstrates:
-
-- JWT-based authentication
-- Role-based authorization with Spring Security
-- Input validation and structured error handling
-- Business rule enforcement in service logic
-- Integration testing with real HTTP requests and database usage
-- Load testing with Gatling
+**Full-Stack Application with Secure Backend, Business Rules, and Use Case Workflows**
 
 ---
 
-## Tech Stack
+##  Overview
 
-- Java 17
-- Spring Boot
-  - Spring Web
-  - Spring Data JPA
-  - Spring Security
-- PostgreSQL
-- Docker Compose
-- Maven
-- WebTestClient
-- JUnit
-- Gatling
+The Event Planning System is a full-stack web application designed to manage events, vendors, bookings, participants, and registrations.
+
+The system provides:
+
+* Secure authentication and role-based authorization
+* End-to-end business workflows (vendor management, booking creation, etc.)
+* Strong backend validation and business rule enforcement
+* A React frontend that reflects real-time system behavior
+
+This project demonstrates a complete software system from **API design → business logic → frontend integration → testing**.
 
 ---
 
-## Backend Project Structure
+##  Tech Stack
+
+### Backend
+
+* Java 17
+* Spring Boot
+
+  * Spring Web
+  * Spring Data JPA
+  * Spring Security (JWT)
+* PostgreSQL
+* Maven
+
+### Frontend
+
+* React (Vite)
+* Axios / Fetch API
+* CSS
+
+### DevOps / Testing
+
+* Docker Compose
+* JUnit + WebTestClient (integration testing)
+* Gatling (load testing)
+
+---
+
+##  System Architecture
+
+```text
+Frontend (React)
+        ↓
+Backend (Spring Boot REST API)
+        ↓
+PostgreSQL Database
+```
+
+* Frontend communicates via REST API using JWT authentication
+* Backend enforces validation, business rules, and authorization
+* Database persists all system entities
+
+---
+
+##  Project Structure
+
+### Backend
 
 ```text
 backend/
-├── src
-│   ├── main
-│   │   ├── java/com/example/demo
-│   │   │   ├── config          # application/security/CORS/seeding configuration
-│   │   │   ├── controller      # REST API endpoints
-│   │   │   ├── entity          # JPA entities and domain models
-│   │   │   ├── repository      # Spring Data JPA repositories
-│   │   │   ├── security        # JWT utilities and authentication filter
-│   │   │   ├── service         # business logic and rule enforcement
-│   │   │   └── DemoApplication.java
-│   │   └── resources           # application properties and backend resources
-│   └── test
-│       ├── java/com/example/demo   # integration tests and load simulation
-│       └── resources               # test resources
-├── pom.xml
-└── Dockerfile.backend
+├── controller      # REST endpoints
+├── service         # business logic and rules
+├── entity          # domain models
+├── repository      # database access
+├── security        # JWT authentication
+├── config          # app/security configuration
+└── test            # integration + load tests
 ```
 
 ---
 
-## User Roles
+### Frontend
 
-The system supports the following roles:
+```text
+frontend/
+├── src
+│   ├── pages
+│   │   ├── Bookings         # booking workflows
+│   │   ├── Dashboard        # role-based dashboard
+│   │   ├── Events
+│   │   ├── Vendors
+│   │   ├── Participants
+│   │   ├── Registrations
+│   │   ├── ScheduleItems
+│   │   ├── Venues
+│   │   ├── MyAccount
+│   │   ├── LoginPage.jsx
+│   │   ├── SignupPage.jsx
+│   │   ├── ForgotPasswordPage.jsx
+│   │   └── ResetPasswordPage.jsx
+│   ├── App.jsx
+│   └── main.jsx
+├── Dockerfile
+└── package.json
+```
+
+---
+
+##  User Roles
+
+The system supports:
 
 * `ADMIN`
+* `ORGANIZER`
 * `STAFF`
 * `PARTICIPANT`
-* `ORGANIZER`
 
-Authorization is enforced using Spring Security annotations:
+Authorization is enforced via:
 
 ```java
-@PreAuthorize("hasAnyRole('ADMIN','ORGANIZER','PARTICIPANT')")
+@PreAuthorize("hasAnyRole('ADMIN','ORGANIZER')")
+```
+In this system, a distinction exists between a User and a Participant:
+
+- User:
+  - Represents an authenticated account
+  - Contains credentials, role, and access control information
+  - Used for authentication and authorization (JWT)
+
+- Participant:
+  - Represents a domain entity associated with event participation
+  - Stores participant-specific data (e.g., registrations)
+  - Linked to a User account (one-to-one relationship)
+
+Important:
+- A User with role PARTICIPANT may have an associated Participant entity
+- Some system operations (e.g., viewing registered event bookings) require this linkage
+- If a Participant entity is not linked, certain actions may fail
+
+---
+
+##  Authentication
+
+### Login
+
+```http
+POST /auth/login
 ```
 
-Example: registration creation is accessible to `ADMIN`, `ORGANIZER`, and `PARTICIPANT`, while `STAFF` is denied.
+```json
+{
+  "username": "admin",
+  "password": "admin123"
+}
+```
+
+### Usage
+
+```
+Authorization: Bearer <token>
+```
 
 ---
 
-## Docker Services
 
-* `db` → PostgreSQL main database (5432)
-* `db-test` → PostgreSQL test database (5433)
-* `backend` → Spring Boot API (8080)
-* `frontend` → React app (5173)
+
+##  Integration Testing
+
+Run tests:
+
+```bash
+mvn test
+```
+
+Covers:
+
+* Authentication
+* Authorization
+* Validation errors
+* Business rules
+* API responses
 
 ---
 
-## Running the Application
+##  Load Testing
+
+Run Gatling:
+
+```bash
+mvn gatling:test -Dgatling.simulationClass=com.example.demo.LoadSimulation
+```
+
+Results:
+
+* 100% success rate
+* ~76 ms average response time
+* 95% < 150 ms
+
+---
+
+##  Running the Application
 
 ```bash
 docker compose up -d --build
 ```
 
-Verify:
+Access:
 
-```bash
-docker ps
-```
+* Backend → [http://localhost:8080](http://localhost:8080)
+* Frontend → [http://localhost:5173](http://localhost:5173)
 
 Stop:
 
@@ -116,112 +227,25 @@ docker compose down -v
 
 ---
 
-## Backend Access
+##  Environment Configuration (Password Reset)
 
+To enable password reset email functionality, create a `.env` file with:
+
+```env
+MAIL_USERNAME=your_email@example.com
+MAIL_PASSWORD=your_email_password
+MAIL_FROM=your_email@example.com
 ```
-http://localhost:8080
-```
+
+### Notes:
+
+* Do NOT commit `.env` to GitHub
+* Use app-specific passwords (e.g., Gmail)
+* Ensure mail server configuration matches your provider
 
 ---
 
-## Authentication
-
-### Login
-
-```http
-POST /auth/login
-```
-
-```json
-{
-  "username": "admin",
-  "password": "admin123"
-}
-```
-
-### Use Token
-
-```
-Authorization: Bearer <token>
-```
-
----
-
-## Validation & Error Handling
-
-Validation uses:
-
-* `@Valid`
-* `@NotBlank`
-* `@Email`
-* `@NotNull`
-
-Global handling via:
-
-```java
-@RestControllerAdvice
-```
-
-### Common Responses
-
-* `200 OK`
-* `204 No Content`
-* `400 Bad Request`
-* `403 Forbidden`
-* `404 Not Found`
-* `409 Conflict`
-* `500 Internal Server Error`
-
----
-
-## Integration Testing
-
-Run all automated tests:
-
-```bash
-mvn test
-```
-
-Tests use:
-
-* WebTestClient
-* real HTTP requests
-* test database (`db-test`)
-
-### Coverage
-
-* authentication flow
-* secured endpoints
-* validation errors
-* business rules
-* role-based access control
-
----
-
-## Load Testing
-
-Run Gatling simulation:
-
-```bash
-mvn gatling:test -Dgatling.simulationClass=com.example.demo.LoadSimulation
-```
-
-### Results
-
-* 100% success rate
-* 0 failures
-* ~76 ms average response time
-* 95% < 150 ms
-* max < 500 ms
-
-Assertions:
-
-* response time < 3000 ms
-* success rate > 95%
-
----
-
-## Javadocs
+##  Javadocs
 
 Generate:
 
@@ -237,7 +261,7 @@ backend/target/site/apidocs/index.html
 
 ---
 
-## Database Inspection
+##  Database Access
 
 ```bash
 docker exec -it event_db psql -U postgres -d eventdb
@@ -245,16 +269,24 @@ docker exec -it event_db psql -U postgres -d eventdb
 
 ---
 
-## Phase 2 Summary
+##  Summary
 
-Phase 2 delivers a secure and robust backend with authentication, validation, business rule enforcement, integration testing, and load testing. The system is fully testable and demonstrates correct behavior under both normal and concurrent usage.
+This project demonstrates a complete full-stack system with:
+
+* Secure authentication and authorization
+* Strong validation and business rule enforcement
+* Fully implemented user workflows
+* Integration and load testing
+* React frontend integrated with backend APIs
 
 ---
 
-## Notes
+##  Notes
 
-* Frontend is minimal for this phase
-* Backend is the primary deliverable
 * Docker is the recommended way to run the system
+* Backend enforces all critical validation and business rules
+* Frontend reflects backend behavior through real-time feedback
+
+---
 
 
