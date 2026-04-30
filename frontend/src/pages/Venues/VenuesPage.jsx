@@ -299,6 +299,7 @@ export default function VenuesPage() {
       // Refresh data
       fetchEvents();
       fetchVenues();
+      fetchVenueEvents(); // Refresh venue events to show the new assignment
     } catch (error) {
       console.error('Error assigning venue:', error);
       
@@ -324,6 +325,57 @@ export default function VenuesPage() {
       setLoading(false);
     }
   };
+
+  const [venueEvents, setVenueEvents] = useState({});
+
+  // Fetch events for each venue by checking all events and their venues
+  const fetchVenueEvents = async () => {
+    try {
+      // Get all events first
+      const eventsResponse = await axios.get(`${API_BASE}/events`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      const allEvents = eventsResponse.data;
+      const eventsMap = {};
+      
+      // For each venue, find events that have this venue assigned
+      for (const venue of venues) {
+        const venueAssignedEvents = [];
+        
+        for (const event of allEvents) {
+          try {
+            // Get venues for this event
+            const eventVenuesResponse = await axios.get(`${API_BASE}/events/${event.id}/venues`, {
+              headers: { Authorization: `Bearer ${token}` }
+            });
+            
+            const eventVenues = eventVenuesResponse.data;
+            
+            // Check if this venue is assigned to this event
+            if (eventVenues.some(v => v.id === venue.id)) {
+              venueAssignedEvents.push(event);
+            }
+          } catch (error) {
+            console.error(`Error checking venues for event ${event.id}:`, error);
+          }
+        }
+        
+        eventsMap[venue.id] = venueAssignedEvents;
+      }
+      
+      setVenueEvents(eventsMap);
+    } catch (error) {
+      console.error('Error fetching venue events:', error);
+    }
+  };
+
+  // Load events for all venues when venues are fetched
+  useEffect(() => {
+    if (venues.length > 0) {
+      fetchVenueEvents();
+    }
+  }, [venues]);
 
   const activeVenues = venues;
 
@@ -485,6 +537,25 @@ export default function VenuesPage() {
                     <p><strong>Email:</strong> {venue.contactEmail}</p>
                     <p><strong>Phone:</strong> {venue.contactPhone}</p>
                   </div>
+                  
+                  {/* Assigned Events Section */}
+                  <div className="venue-events">
+                    <h4>Assigned Events:</h4>
+                    {venueEvents[venue.id] && venueEvents[venue.id].length > 0 ? (
+                      <div className="assigned-events-list">
+                        {venueEvents[venue.id].map(event => (
+                          <div key={event.id} className="assigned-event-item">
+                            <p><strong>{event.name}</strong></p>
+                            <p className="event-time">{event.startDateTime} - {event.endDateTime}</p>
+                            <p className="event-status">Status: {event.status}</p>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="no-events">No events assigned</p>
+                    )}
+                  </div>
+                  
                   {canEdit && (
                     <div className="venue-actions">
                       <button 
