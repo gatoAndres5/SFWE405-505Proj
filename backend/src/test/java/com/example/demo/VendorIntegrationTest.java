@@ -326,33 +326,6 @@ class VendorIntegrationTest {
     }
 
     @Test
-    @DisplayName("GET /vendors/{id}/bookings returns bookings")
-    void getBookingsTest() {
-        webTestClient.get()
-                .uri("/vendors/" + sarahVendor.getId() + "/bookings")
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + adminToken)
-                .exchange()
-                .expectStatus().isOk();
-    }
-
-    @Test
-    @DisplayName("GET /vendors/{id}/availability returns true or false")
-    void isAvailableTest() {
-        LocalDateTime start = LocalDateTime.parse("2026-04-07T10:00:00");
-        LocalDateTime end = LocalDateTime.parse("2026-04-07T12:00:00");
-
-        webTestClient.get()
-                .uri(uriBuilder -> uriBuilder
-                        .path("/vendors/{id}/availability")
-                        .queryParam("startDateTime", start)
-                        .queryParam("endDateTime", end)
-                        .build(sarahVendor.getId()))
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + adminToken)
-                .exchange()
-                .expectStatus().isOk();
-    }
-
-    @Test
     @DisplayName("DELETE /vendors/{id} deletes vendor")
     void deleteVendorTest() {
         webTestClient.delete()

@@ -34,3 +34,4 @@ build/
 *.Identifier
 .mvn/
 .env
+videos/

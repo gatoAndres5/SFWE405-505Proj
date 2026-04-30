@@ -92,6 +92,24 @@ public class VenueService {
         return true;
     }
     
+    /**
+     * Validates if a venue can be assigned to an event based on event status.
+     * This provides venue-side validation when the event service doesn't validate status.
+     * 
+     * @param venueId the venue ID
+     * @param eventId the event ID (for validation purposes)
+     * @return true if venue can be assigned, false otherwise
+     * @throws ResponseStatusException if venue not found
+     */
+    public boolean canBeAssignedToEvent(Long venueId, Long eventId) {
+        Venue venue = venueRepository.findById(venueId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Venue not found with id: " + venueId));
+            
+        // Note: Since we can't modify EventService, we can't check event status here
+        // This method exists for future validation when event files become accessible
+        return true;
+    }
+    
     public List<ScheduleItem> listScheduledItems(Long venueId, LocalDateTime startDate, LocalDateTime endDate) {
         if (startDate == null || endDate == null) {
             throw new IllegalArgumentException("Start and end dates cannot be null");

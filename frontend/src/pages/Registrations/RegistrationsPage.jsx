@@ -10,6 +10,7 @@ export default function RegistrationsPage() {
   const [registrations, setRegistrations] = useState([]);
   const [events, setEvents] = useState([]);
   const [participants, setParticipants] = useState([]);
+  const [myParticipant, setMyParticipant] = useState(null);
   const [users, setUsers] = useState([]);
   const [previewUserEvents, setPreviewUserEvents] = useState([]);
 
@@ -107,7 +108,17 @@ export default function RegistrationsPage() {
 
     if (!res.ok) {
       const text = await res.text();
-      throw new Error(text || "Request failed.");
+
+      let message = "Request failed.";
+
+      try {
+        const json = JSON.parse(text);
+        message = json.message || message;
+      } catch {
+        message = text || message;
+      }
+
+      throw new Error(message);
     }
 
     const contentType = res.headers.get("content-type");
@@ -131,6 +142,11 @@ export default function RegistrationsPage() {
   async function fetchParticipants() {
     const data = await apiRequest(`${API_BASE}/participants`);
     setParticipants(data || []);
+  }
+
+  async function fetchMyParticipant() {
+    const data = await apiRequest(`${API_BASE}/participants/me`);
+    setMyParticipant(data);
   }
 
   async function fetchUsers() {
@@ -174,6 +190,10 @@ export default function RegistrationsPage() {
     try {
       const requests = [fetchRegistrations(), fetchEvents()];
 
+      if (isParticipant) {
+        requests.push(fetchMyParticipant());
+      }
+
       if (isAdmin || isOrganizer) {
         requests.push(fetchParticipants());
       }
@@ -197,6 +217,10 @@ export default function RegistrationsPage() {
   const resolvedParticipantId = useMemo(() => {
     if (!isParticipant) return null;
 
+    if (myParticipant?.participantId) {
+      return myParticipant.participantId;
+    }
+
     if (effectiveParticipantId) return effectiveParticipantId;
 
     const firstRegistrationWithParticipant = registrations.find(
@@ -204,7 +228,7 @@ export default function RegistrationsPage() {
     );
 
     return firstRegistrationWithParticipant?.participant?.participantId ?? null;
-  }, [isParticipant, effectiveParticipantId, registrations]);
+  }, [isParticipant, myParticipant, effectiveParticipantId, registrations]);
 
   useEffect(() => {
     if (isParticipant && resolvedParticipantId) {
@@ -323,6 +347,10 @@ export default function RegistrationsPage() {
   const selectedParticipant = useMemo(() => {
     const lookupId = canSelectParticipant ? participantId : resolvedParticipantId;
 
+    if (isParticipant && myParticipant) {
+      return myParticipant;
+    }
+
     return visibleParticipants.find(
       (participant) =>
         String(participant.participantId) === String(lookupId)
@@ -332,6 +360,8 @@ export default function RegistrationsPage() {
     participantId,
     resolvedParticipantId,
     canSelectParticipant,
+    isParticipant,
+    myParticipant,
   ]);
 
   const visibleRegistrations = useMemo(() => {

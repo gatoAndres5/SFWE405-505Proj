@@ -38,6 +38,31 @@ public class VenueController {
     }
 
     /**
+     * Retrieves all venues in simplified format (without circular references).
+     * Returns a list of venues with basic information only.
+     * 
+     * @return ResponseEntity containing a list of simplified venue data
+     */
+    @GetMapping("/list")
+    public ResponseEntity<List<SimpleVenueResponse>> getAllVenuesSimple() {
+        List<Venue> venues = venueService.getAllVenues();
+        List<SimpleVenueResponse> simpleVenues = venues.stream()
+            .map(venue -> new SimpleVenueResponse(
+                venue.getVenueId(),
+                venue.getName(),
+                venue.getAddress(),
+                venue.getCapacity(),
+                venue.getContactName(),
+                venue.getContactEmail(),
+                venue.getContactPhone(),
+                venue.getCreatedAt(),
+                venue.getUpdatedAt()
+            ))
+            .collect(java.util.stream.Collectors.toList());
+        return ResponseEntity.ok(simpleVenues);
+    }
+
+    /**
      * Creates a new venue in the system.
      * Validates the input parameters and persists the venue to the database.
      * 
@@ -115,6 +140,7 @@ public class VenueController {
 
     /**
      * Retrieves a specific venue by its unique identifier.
+     * Returns detailed venue information including all associated data.
      * 
      * @param id the unique identifier of the venue to retrieve
      * @return ResponseEntity containing the venue details
@@ -284,5 +310,45 @@ public class VenueController {
          * @param available the availability status to set
          */
         public void setAvailable(boolean available) { this.available = available; }
+    }
+
+    /**
+     * Simple venue response DTO to avoid circular references.
+     */
+    public static class SimpleVenueResponse {
+        private Long id;
+        private String name;
+        private Address address;
+        private int capacity;
+        private String contactName;
+        private String contactEmail;
+        private String contactPhone;
+        private LocalDateTime createdAt;
+        private LocalDateTime updatedAt;
+
+        public SimpleVenueResponse(Long id, String name, Address address, int capacity,
+                                 String contactName, String contactEmail, String contactPhone,
+                                 LocalDateTime createdAt, LocalDateTime updatedAt) {
+            this.id = id;
+            this.name = name;
+            this.address = address;
+            this.capacity = capacity;
+            this.contactName = contactName;
+            this.contactEmail = contactEmail;
+            this.contactPhone = contactPhone;
+            this.createdAt = createdAt;
+            this.updatedAt = updatedAt;
+        }
+
+        // Getters
+        public Long getId() { return id; }
+        public String getName() { return name; }
+        public Address getAddress() { return address; }
+        public int getCapacity() { return capacity; }
+        public String getContactName() { return contactName; }
+        public String getContactEmail() { return contactEmail; }
+        public String getContactPhone() { return contactPhone; }
+        public LocalDateTime getCreatedAt() { return createdAt; }
+        public LocalDateTime getUpdatedAt() { return updatedAt; }
     }
 }

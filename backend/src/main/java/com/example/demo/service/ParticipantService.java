@@ -62,9 +62,13 @@ public class ParticipantService {
         );
 
         newParticipant.setUser(user);
-        user.setParticipant(newParticipant);
 
-        return participantRepository.save(newParticipant);
+        Participant savedParticipant = participantRepository.save(newParticipant);
+
+        user.setParticipant(savedParticipant);
+        userRepository.save(user);
+
+        return savedParticipant;
     }
 
     public Participant updateMyParticipant(String username, Participant updatedParticipant) {
