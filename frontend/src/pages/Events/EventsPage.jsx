@@ -30,6 +30,10 @@ export default function EventsPage() {
   });
 
   const token = localStorage.getItem("token");
+  const handleFormChange = (field, value) => {
+  setForm({ ...form, [field]: value });
+  setError("");
+  };
 
   const getRole = () => {
     const savedRole = localStorage.getItem("role");
@@ -315,32 +319,28 @@ export default function EventsPage() {
             className="input"
             placeholder="Name"
             value={form.name}
-            onChange={(e) => setForm({ ...form, name: e.target.value })}
+            onChange={(e) => handleFormChange("name", e.target.value)}
           />
 
           <input
             className="input"
             placeholder="Description"
             value={form.description}
-            onChange={(e) => setForm({ ...form, description: e.target.value })}
+            onChange={(e) => handleFormChange("description", e.target.value)}
           />
 
           <input
             className="input"
             type="datetime-local"
             value={form.startDateTime}
-            onChange={(e) =>
-              setForm({ ...form, startDateTime: e.target.value })
-            }
+            onChange={(e) => handleFormChange("startDateTime", e.target.value)}
           />
 
           <input
             className="input"
             type="datetime-local"
             value={form.endDateTime}
-            onChange={(e) =>
-              setForm({ ...form, endDateTime: e.target.value })
-            }
+            onChange={(e) => handleFormChange("endDateTime", e.target.value )}
           />
 
           <div className="actions">
